@@ -4,7 +4,11 @@
     <ErrorDrawer :errors="state.errors.length ? state.errors : state.warnings" />
     <BomGridToolbar
       :search="filters.search"
+      :attrs="filters.attrs"
+      :amount-min="filters.amountMin"
       @update:search="filters.search = $event"
+      @update:attrs="filters.attrs = $event"
+      @update:amount-min="filters.amountMin = $event"
       @export-current="handleExport"
       @expand-all="expanded = true"
       @collapse-all="expanded = false"
@@ -20,10 +24,14 @@
         :current-summary="currentSummary"
         :focus-summary="focusSummary"
         :selection-summary="selectionSummary"
+        :include-collapsed-descendants="includeCollapsedDescendants"
         :amount-by-attr="
           focusRow
             ? state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ?? {}
             : {}
+        "
+        @update:include-collapsed-descendants="
+          includeCollapsedDescendants = $event
         "
       />
     </div>
