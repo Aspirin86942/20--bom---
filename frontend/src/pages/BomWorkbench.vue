@@ -85,3 +85,28 @@ async function handleExport(): Promise<void> {
   await exportDataset(state.datasetId);
 }
 </script>
+
+<style scoped>
+.workbench {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--spacing-lg);
+  gap: var(--spacing-md);
+  background-color: var(--color-bg-container);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: var(--spacing-md);
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
