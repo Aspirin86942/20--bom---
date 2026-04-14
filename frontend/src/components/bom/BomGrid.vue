@@ -2,7 +2,7 @@
   <vxe-table
     ref="gridRef"
     :data="rows"
-    row-id="id"
+    :row-config="{ keyField: 'id' }"
     :checkbox-config="{ highlight: true }"
     :tree-config="{ transform: true, rowField: 'id', parentField: 'parent_id' }"
     @cell-click="({ row }) => $emit('focus-row', row)"
