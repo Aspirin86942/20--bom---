@@ -5,8 +5,8 @@
     </template>
     <div class="stats-grid">
       <el-statistic title="行数" :value="summary.rowCount" />
-      <el-statistic title="数量合计" :value="summary.qtySum" :precision="2" />
-      <el-statistic title="金额合计" :value="summary.amountSum" :precision="2" prefix="¥" />
+      <el-statistic title="数量合计" :value="Number(summary.qtySum)" :precision="2" />
+      <el-statistic title="金额合计" :value="Number(summary.amountSum)" :precision="2" prefix="¥" />
     </div>
   </el-card>
 </template>

@@ -50,7 +50,7 @@ vi.mock("../api/dataset", () => ({
 
 test("loads rows and keeps warning panel visible after import", async () => {
     render(BomWorkbench);
-    const input = screen.getByLabelText("上传 Excel");
+    const input = screen.getByLabelText("上传 Excel").querySelector('input[type="file"]') as HTMLInputElement;
 
     await userEvent.upload(input, new File(["demo"], "bom.xlsx"));
 
@@ -62,8 +62,9 @@ test("loads rows and keeps warning panel visible after import", async () => {
 test("filters rows by attr and amount from toolbar", async () => {
     render(BomWorkbench);
 
+    const input = screen.getByLabelText("上传 Excel").querySelector('input[type="file"]') as HTMLInputElement;
     await userEvent.upload(
-        screen.getByLabelText("上传 Excel"),
+        input,
         new File(["demo"], "bom.xlsx"),
     );
 

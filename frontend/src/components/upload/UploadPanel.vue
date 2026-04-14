@@ -6,6 +6,7 @@
     :auto-upload="false"
     :show-file-list="false"
     :on-change="handleFileChange"
+    aria-label="上传 Excel"
   >
     <el-icon class="upload-icon"><upload-filled /></el-icon>
     <div class="upload-text">点击或拖拽 Excel 文件到此处</div>
