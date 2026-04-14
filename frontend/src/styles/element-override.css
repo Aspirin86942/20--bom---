@@ -1,0 +1,15 @@
+/* 覆盖 Element Plus 主题色为绿色 */
+:root {
+  --el-color-primary: #52c41a;
+  --el-color-primary-light-3: #73d13d;
+  --el-color-primary-light-5: #95de64;
+  --el-color-primary-light-7: #b7eb8f;
+  --el-color-primary-light-8: #d9f7be;
+  --el-color-primary-light-9: #f6ffed;
+  --el-color-primary-dark-2: #389e0d;
+
+  /* 圆角统一 */
+  --el-border-radius-base: 8px;
+  --el-border-radius-small: 4px;
+  --el-border-radius-round: 20px;
+}

@@ -1,0 +1,45 @@
+:root {
+  /* 颜色系统 - 绿色主题 */
+  --color-primary: #52c41a;
+  --color-primary-light: #73d13d;
+  --color-primary-lighter: #f6ffed;
+  --color-primary-dark: #389e0d;
+  --color-success: #52c41a;
+  --color-warning: #faad14;
+  --color-danger: #ff4d4f;
+  --color-info: #1890ff;
+
+  /* 中性色 */
+  --color-text-primary: #262626;
+  --color-text-secondary: #8c8c8c;
+  --color-text-tertiary: #bfbfbf;
+  --color-border: #d9d9d9;
+  --color-border-light: #f0f0f0;
+  --color-bg-base: #ffffff;
+  --color-bg-container: #fafafa;
+  --color-bg-elevated: #ffffff;
+
+  /* 间距系统 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* 圆角 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* 字体 */
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-xxl: 24px;
+}
