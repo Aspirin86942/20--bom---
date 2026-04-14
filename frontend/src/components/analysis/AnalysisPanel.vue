@@ -39,3 +39,45 @@ defineEmits<{
   "update:includeCollapsedDescendants": [value: boolean];
 }>();
 </script>
+
+<style scoped>
+.analysis-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.analysis-panel h2 {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-size-xxl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analysis-panel label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background-color: var(--color-bg-container);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.analysis-panel label:hover {
+  background-color: var(--color-primary-lighter);
+}
+
+.analysis-panel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+</style>
