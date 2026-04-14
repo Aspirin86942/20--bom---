@@ -74,3 +74,82 @@ function emitAmountMinChange(event: Event): void {
   emit("update:amount-min", (event.target as HTMLInputElement).value);
 }
 </script>
+
+<style scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-elevated);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  flex-wrap: wrap;
+}
+
+label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+label span {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"] {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  transition: all 0.3s;
+  min-width: 180px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px var(--color-primary-lighter);
+}
+
+select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  min-width: 120px;
+  background-color: var(--color-bg-base);
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: var(--color-primary);
+  color: white;
+}
+
+button:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+button:active {
+  transform: translateY(0);
+}
+</style>
