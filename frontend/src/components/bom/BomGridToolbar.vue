@@ -3,6 +3,7 @@
     <label>
       <span>搜索</span>
       <input
+        type="text"
         :value="search"
         aria-label="搜索编码/名称"
         placeholder="搜索编码/名称"
@@ -24,6 +25,7 @@
     <label>
       <span>金额下限</span>
       <input
+        type="text"
         :value="amountMin"
         aria-label="金额下限"
         inputmode="decimal"
