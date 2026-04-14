@@ -14,7 +14,7 @@ defineProps<{ errors: Array<Record<string, unknown>> }>();
 </script>
 
 <style scoped>
-div {
+aside {
   padding: var(--spacing-md);
   background-color: #fff7e6;
   border-left: 4px solid var(--color-warning);
@@ -22,7 +22,7 @@ div {
   margin-bottom: var(--spacing-md);
 }
 
-div:empty {
+aside:empty {
   display: none;
 }
 
