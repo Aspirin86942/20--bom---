@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { UploadFilled } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import type { UploadFile } from "element-plus";
 
 
@@ -22,9 +23,25 @@ const emit = defineEmits<{ select: [file: File] }>();
 
 
 function handleFileChange(uploadFile: UploadFile): void {
-  if (uploadFile.raw) {
-    emit("select", uploadFile.raw);
+  if (!uploadFile.raw) {
+    return;
   }
+
+  // 文件类型验证
+  const fileName = uploadFile.name.toLowerCase();
+  if (!fileName.endsWith('.xlsx')) {
+    ElMessage.error('仅支持 .xlsx 格式的 Excel 文件');
+    return;
+  }
+
+  // 文件大小验证（50MB）
+  const maxSize = 50 * 1024 * 1024;
+  if (uploadFile.size && uploadFile.size > maxSize) {
+    ElMessage.error('文件大小不能超过 50MB');
+    return;
+  }
+
+  emit("select", uploadFile.raw);
 }
 </script>
 
