@@ -10,9 +10,25 @@ def build_workbook(rows: list[list[object]]) -> BytesIO:
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "子项明细"
-    sheet.append(["BOM层级", "子项物料编码", "物料名称", "物料属性", "实际数量", "金额"])
+    sheet.append([
+        "BOM层级", "子项物料编码", "物料名称", "规格型号", "物料属性",
+        "BOM版本", "数据状态", "单位", "子项类型", "用量:分子", "用量:分母",
+        "币别", "单价", "金额", "税率%", "含税单价", "价税合计",
+        "材料单价来源", "供应商", "标准用量", "实际数量"
+    ])
     for row in rows:
-        sheet.append(row)
+        # 扩展行数据，补齐缺失的列（原始测试数据只有 6 列）
+        extended_row = list(row[:3])  # BOM层级, 子项物料编码, 物料名称
+        extended_row.extend([""] * 1)  # 规格型号
+        extended_row.append(row[3] if len(row) > 3 else "")  # 物料属性
+        extended_row.extend(["", "", "", ""])  # BOM版本, 数据状态, 单位, 子项类型
+        extended_row.extend([0, 0])  # 用量:分子, 用量:分母
+        extended_row.extend(["", Decimal("0")])  # 币别, 单价
+        extended_row.append(row[5] if len(row) > 5 else Decimal("0"))  # 金额
+        extended_row.extend([Decimal("0"), Decimal("0"), Decimal("0")])  # 税率%, 含税单价, 价税合计
+        extended_row.extend(["", "", 0])  # 材料单价来源, 供应商, 标准用量
+        extended_row.append(row[4] if len(row) > 4 else 0)  # 实际数量
+        sheet.append(extended_row)
 
     buffer = BytesIO()
     workbook.save(buffer)

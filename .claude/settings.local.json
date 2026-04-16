@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(conda env:*)",
+      "Read(//c/Users/Aspir/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/**)",
+      "Bash(bash scripts/start-server.sh --project-dir \"D:\\\\bochu_work\\\\20- bom结构表\")",
+      "Bash(git:*)"
+    ]
+  }
+}

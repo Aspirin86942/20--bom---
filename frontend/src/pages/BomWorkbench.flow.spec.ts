@@ -68,7 +68,7 @@ test("filters rows by attr and amount from toolbar", async () => {
         new File(["demo"], "bom.xlsx"),
     );
 
-    await userEvent.selectOptions(screen.getByLabelText("物料属性筛选"), "外购");
+    await userEvent.click(screen.getByRole("button", { name: "外购" }));
     await userEvent.clear(screen.getByLabelText("金额下限"));
     await userEvent.type(screen.getByLabelText("金额下限"), "4");
 

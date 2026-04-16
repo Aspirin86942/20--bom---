@@ -4,10 +4,10 @@
     <ErrorDrawer :errors="state.errors.length ? state.errors : state.warnings" />
     <BomGridToolbar
       :search="filters.search"
-      :attrs="filters.attrs"
+      :material-attr="filters.materialAttr"
       :amount-min="filters.amountMin"
       @update:search="filters.search = $event"
-      @update:attrs="filters.attrs = $event"
+      @update:material-attr="filters.materialAttr = $event"
       @update:amount-min="filters.amountMin = $event"
       @export-current="handleExport"
       @expand-all="expanded = true"
@@ -16,6 +16,7 @@
     <div class="layout">
       <BomGrid
         :rows="filteredRows"
+        :flat-rows="rowsRef"
         :expand-all="expanded"
         @focus-row="focusRow = $event"
         @selection-change="selectedRows = $event"

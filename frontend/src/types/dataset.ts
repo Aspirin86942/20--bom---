@@ -7,6 +7,22 @@ export interface FlatRow {
   attr: string;
   qty_actual: string;
   amount: string;
+  // 新增字段
+  spec_model: string;
+  bom_version: string;
+  data_status: string;
+  unit: string;
+  sub_item_type: string;
+  qty_numerator: number;
+  qty_denominator: number;
+  standard_qty: number;
+  currency: string;
+  unit_price: number;
+  tax_rate: number;
+  unit_price_with_tax: number;
+  total_price_with_tax: number;
+  price_source: string;
+  supplier: string;
 }
 
 

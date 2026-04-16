@@ -11,7 +11,7 @@ test("filters rows by search, attr and amount", () => {
     const { filters, filteredRows } = useFilters(ref(rows as never[]));
 
     filters.search = "子模";
-    filters.attrs = ["外购"];
+    filters.materialAttr = "外购";
     filters.amountMin = "4";
 
     expect(filteredRows.value).toHaveLength(1);

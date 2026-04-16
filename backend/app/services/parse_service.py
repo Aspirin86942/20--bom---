@@ -30,7 +30,44 @@ def _append_error(
     )
 
 
+def _safe_str(value: object) -> str:
+    """安全转换为字符串，None 或空值返回空字符串"""
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _safe_int(value: object) -> int:
+    """安全转换为整数，None 或空值返回 0"""
+    if value is None:
+        return 0
+    normalized = str(value).strip()
+    if normalized == "":
+        return 0
+    try:
+        return int(float(normalized))  # 支持 "1.0" 这类格式
+    except (ValueError, OverflowError):
+        return 0
+
+
+def _safe_decimal(value: object) -> Decimal:
+    """安全转换为 Decimal，None 或空值返回 0，非法值返回 0（不抛出错误）"""
+    if value is None:
+        return Decimal("0")
+    normalized = str(value).strip()
+    if normalized == "":
+        return Decimal("0")
+    try:
+        parsed = Decimal(normalized)
+        if not parsed.is_finite():
+            return Decimal("0")
+        return parsed
+    except InvalidOperation:
+        return Decimal("0")
+
+
 def _to_decimal(value: object, *, field: str, row_index: int, errors: list[ParseErrorItem]) -> Decimal | None:
+    """严格转换为 Decimal，用于关键字段（实际数量、金额），失败时记录错误并返回 None"""
     if value is None:
         return Decimal("0")
     normalized = str(value).strip()
@@ -128,7 +165,22 @@ def parse_rows_to_flat_nodes(rows: list[dict[str, object]]) -> tuple[list[FlatRo
             "parent_name": str(parent["name"]),
             "code": str(raw["子项物料编码"]),
             "name": str(raw["物料名称"]),
+            "spec_model": _safe_str(raw["规格型号"]),
             "attr": str(raw["物料属性"]),
+            "bom_version": _safe_str(raw["BOM版本"]),
+            "data_status": _safe_str(raw["数据状态"]),
+            "unit": _safe_str(raw["单位"]),
+            "sub_item_type": _safe_str(raw["子项类型"]),
+            "qty_numerator": _safe_int(raw["用量:分子"]),
+            "qty_denominator": _safe_int(raw["用量:分母"]),
+            "currency": _safe_str(raw["币别"]),
+            "unit_price": _safe_decimal(raw["单价"]),
+            "tax_rate": _safe_decimal(raw["税率%"]),
+            "unit_price_with_tax": _safe_decimal(raw["含税单价"]),
+            "total_price_with_tax": _safe_decimal(raw["价税合计"]),
+            "price_source": _safe_str(raw["材料单价来源"]),
+            "supplier": _safe_str(raw["供应商"]),
+            "standard_qty": _safe_int(raw["标准用量"]),
             "qty_actual": qty_actual,
             "amount": amount,
         }

@@ -10,18 +10,43 @@
         @input="emitSearchChange"
       />
     </label>
-    <label>
+    <div class="filter-group">
       <span>物料属性</span>
-      <select
-        aria-label="物料属性筛选"
-        multiple
-        @change="emitAttrsChange"
-      >
-        <option value="自制" :selected="attrs.includes('自制')">自制</option>
-        <option value="外购" :selected="attrs.includes('外购')">外购</option>
-        <option value="委外" :selected="attrs.includes('委外')">委外</option>
-      </select>
-    </label>
+      <div class="radio-group">
+        <button
+          type="button"
+          class="radio-button"
+          :class="{ active: materialAttr === '' }"
+          @click="emitMaterialAttrChange('')"
+        >
+          全部
+        </button>
+        <button
+          type="button"
+          class="radio-button"
+          :class="{ active: materialAttr === '外购' }"
+          @click="emitMaterialAttrChange('外购')"
+        >
+          外购
+        </button>
+        <button
+          type="button"
+          class="radio-button"
+          :class="{ active: materialAttr === '自制' }"
+          @click="emitMaterialAttrChange('自制')"
+        >
+          自制
+        </button>
+        <button
+          type="button"
+          class="radio-button"
+          :class="{ active: materialAttr === '委外' }"
+          @click="emitMaterialAttrChange('委外')"
+        >
+          委外
+        </button>
+      </div>
+    </div>
     <label>
       <span>金额下限</span>
       <input
@@ -44,13 +69,13 @@
 <script setup lang="ts">
 defineProps<{
   search: string;
-  attrs: string[];
+  materialAttr: string;
   amountMin: string;
 }>();
 
 const emit = defineEmits<{
   "update:search": [value: string];
-  "update:attrs": [value: string[]];
+  "update:material-attr": [value: string];
   "update:amount-min": [value: string];
   "expand-all": [];
   "collapse-all": [];
@@ -63,12 +88,8 @@ function emitSearchChange(event: Event): void {
 }
 
 
-function emitAttrsChange(event: Event): void {
-  const selectedValues = Array.from(
-    (event.target as HTMLSelectElement).selectedOptions,
-  ).map((option) => option.value);
-
-  emit("update:attrs", selectedValues);
+function emitMaterialAttrChange(value: string): void {
+  emit("update:material-attr", value);
 }
 
 
@@ -99,6 +120,52 @@ label {
 
 label span {
   white-space: nowrap;
+  font-weight: 500;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.filter-group > span {
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.radio-group {
+  display: inline-flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.radio-button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-right: 1px solid var(--color-border);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.radio-button:last-child {
+  border-right: none;
+}
+
+.radio-button:hover {
+  background-color: var(--color-bg-elevated);
+}
+
+.radio-button.active {
+  background-color: var(--color-primary);
+  color: white;
   font-weight: 500;
 }
 
