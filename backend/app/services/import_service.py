@@ -5,6 +5,7 @@ from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 from app.services.aggregate_service import build_subtree_aggregates
+from app.services.index_service import build_indexes
 from app.services.parse_service import parse_rows_to_flat_nodes
 from app.validators.workbook_validator import validate_workbook
 
@@ -69,6 +70,32 @@ def import_dataset(file_obj: BytesIO) -> ImportResult:
     subtree_aggregates = build_subtree_aggregates(flat_rows)
     logger.info(f"子树聚合完成，节点数: {len(subtree_aggregates)}")
 
+    # 路径和 where-used 共享同一批 parent-child 关系，导入阶段一次构建可以避免后续重复遍历。
+    logger.info("开始构建路径索引与 where-used 索引...")
+    try:
+        rows_with_indexes, indexes = build_indexes(flat_rows)
+    except ValueError as exc:
+        logger.warning(f"路径索引构建失败: {exc}")
+        return {
+            "status": "failed",
+            "summary": {
+                "fatal_count": 1,
+                "warning_count": 0,
+            },
+            "errors": [
+                {
+                    "severity": "fatal",
+                    "code": "INVALID_PARENT_ID",
+                    "row_index": None,
+                    "field": "parent_id",
+                    "raw_value": "",
+                    "message": str(exc),
+                    "action": "请修正父子关系后重新导入",
+                }
+            ],
+        }
+    logger.info("路径索引构建完成")
+
     return {
         "status": "success",
         "summary": {
@@ -76,7 +103,8 @@ def import_dataset(file_obj: BytesIO) -> ImportResult:
             "valid_rows": len(flat_rows),
             "warning_count": 0,
         },
-        "rows": flat_rows,
+        "rows": rows_with_indexes,
+        "indexes": indexes,
         "subtree_aggregates": subtree_aggregates,
         "warnings": [],
     }

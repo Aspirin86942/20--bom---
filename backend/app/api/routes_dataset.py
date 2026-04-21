@@ -79,3 +79,38 @@ def get_dataset(
         subtree_aggregates=cast(dict[str, dict[str, object]], payload.get("subtree_aggregates", {})),
         warnings=cast(list[dict[str, object]], payload.get("warnings", [])),
     )
+
+
+@router.get("/api/datasets/{dataset_id}/where-used")
+def get_where_used(
+    dataset_id: str,
+    code: str | None = Query(default=None),
+) -> dict[str, object]:
+    payload = dataset_store.get(dataset_id)
+    if payload is None:
+        # where-used 依赖同一个数据集缓存，找不到数据集时返回结构化 404。
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "DATASET_NOT_FOUND",
+                "message": f"未找到数据集: {dataset_id}",
+                "retryable": False,
+            },
+        )
+
+    if code is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "code": "MISSING_QUERY_PARAM",
+                "message": "缺少必填参数: code",
+                "retryable": False,
+            },
+        )
+
+    indexes = cast(dict[str, object], payload.get("indexes", {}))
+    where_used = cast(dict[str, list[list[str]]], indexes.get("where_used", {}))
+    return {
+        "code": code,
+        "paths": where_used.get(code, []),
+    }

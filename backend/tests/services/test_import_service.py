@@ -51,6 +51,9 @@ def test_import_dataset_returns_rows_and_subtree_aggregates() -> None:
     assert result["summary"]["total_rows"] == 3
     assert result["summary"]["valid_rows"] == 2
     assert result["summary"]["warning_count"] == 0
+    assert result["indexes"]["where_used"]["A"] == [["A"]]
+    assert result["rows"][0]["path_codes"] == ["A"]
+    assert result["rows"][1]["path_codes"] == ["A", "B"]
     assert result["subtree_aggregates"]["row_3"]["subtree_amount_sum"] == Decimal("15")
     assert result["subtree_aggregates"]["row_3"]["amount_by_attr"]["自制"] == Decimal("10")
     assert result["subtree_aggregates"]["row_3"]["amount_by_attr"]["外购"] == Decimal("5")
