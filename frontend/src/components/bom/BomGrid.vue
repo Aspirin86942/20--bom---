@@ -75,24 +75,59 @@ watch(
 );
 
 // 监听搜索结果变化，自动展开匹配节点的完整子树
+// 只在搜索过滤时触发（filteredRows < flatRows），避免初始加载时卡顿
 watch(
   () => props.rows,
   (newFiltered) => {
     if (!gridRef.value) return;
+
+    // 如果过滤后的行数等于总行数，说明没有搜索过滤，跳过展开逻辑
+    if (newFiltered.length === props.flatRows.length) {
+      console.log("[BomGrid] 无搜索过滤，跳过自动展开");
+      return;
+    }
+
+    console.log("[BomGrid] 检测到搜索过滤，开始自动展开匹配节点...");
 
     // 收集所有匹配节点的 ID
     const matchedIds = new Set(newFiltered.map(r => String(r.id)));
 
     // 收集匹配节点及其完整子树
     const toExpand = collectMatchedSubtrees(matchedIds, props.flatRows);
+    console.log(`[BomGrid] 需要展开 ${toExpand.size} 个节点`);
 
-    // 展开所有需要展开的节点
-    toExpand.forEach(id => {
-      const row = props.flatRows.find(r => r.id === id);
-      if (row && gridRef.value?.setTreeExpand) {
-        gridRef.value.setTreeExpand(row as Record<string, unknown>, true);
+    // 性能优化：如果需要展开的节点过多（>500），使用全部展开而不是逐个展开
+    if (toExpand.size > 500) {
+      console.log("[BomGrid] 节点数量过多，使用全部展开模式");
+      if (gridRef.value?.setAllTreeExpand) {
+        gridRef.value.setAllTreeExpand(true);
       }
-    });
+    } else {
+      // 批量展开：使用 requestAnimationFrame 分批处理，避免阻塞 UI
+      const expandArray = Array.from(toExpand);
+      const batchSize = 50;
+      let index = 0;
+
+      const expandBatch = () => {
+        const end = Math.min(index + batchSize, expandArray.length);
+        for (let i = index; i < end; i++) {
+          const id = expandArray[i];
+          const row = props.flatRows.find(r => r.id === id);
+          if (row && gridRef.value?.setTreeExpand) {
+            gridRef.value.setTreeExpand(row as Record<string, unknown>, true);
+          }
+        }
+        index = end;
+
+        if (index < expandArray.length) {
+          requestAnimationFrame(expandBatch);
+        } else {
+          console.log("[BomGrid] 自动展开完成");
+        }
+      };
+
+      requestAnimationFrame(expandBatch);
+    }
   },
   { flush: 'post' }
 );

@@ -45,3 +45,32 @@ def test_import_and_fetch_dataset() -> None:
 
     assert detail_response.status_code == 200
     assert detail_response.json()["rows"][0]["code"] == "A"
+
+
+def test_fetch_dataset_returns_404_error_model_when_dataset_missing() -> None:
+    safe_client = TestClient(app, raise_server_exceptions=False)
+
+    response = safe_client.get("/api/datasets/not_exists")
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "DATASET_NOT_FOUND"
+    assert response.json()["detail"]["retryable"] is False
+
+
+def test_import_invalid_workbook_returns_400_error_model() -> None:
+    safe_client = TestClient(app, raise_server_exceptions=False)
+
+    response = safe_client.post(
+        "/api/import",
+        files={
+            "file": (
+                "invalid.xlsx",
+                b"not-an-excel-file",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"]["code"] == "INVALID_WORKBOOK"
+    assert response.json()["detail"]["retryable"] is False

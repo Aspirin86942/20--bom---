@@ -24,13 +24,17 @@ const emit = defineEmits<{ select: [file: File] }>();
 
 
 function handleFileChange(uploadFile: UploadFile): void {
+  console.log("[UploadPanel] 文件选择:", uploadFile);
+
   if (!uploadFile.raw) {
+    console.warn("[UploadPanel] 没有原始文件对象");
     return;
   }
 
   // 文件类型验证
   const fileName = uploadFile.name.toLowerCase();
   if (!fileName.endsWith('.xlsx')) {
+    console.warn("[UploadPanel] 文件类型不支持:", fileName);
     ElMessage.error('仅支持 .xlsx 格式的 Excel 文件');
     return;
   }
@@ -38,10 +42,12 @@ function handleFileChange(uploadFile: UploadFile): void {
   // 文件大小验证（50MB）
   const maxSize = 50 * 1024 * 1024;
   if (uploadFile.size && uploadFile.size > maxSize) {
+    console.warn("[UploadPanel] 文件过大:", uploadFile.size);
     ElMessage.error('文件大小不能超过 50MB');
     return;
   }
 
+  console.log("[UploadPanel] 文件验证通过，触发 select 事件");
   emit("select", uploadFile.raw);
 }
 </script>
