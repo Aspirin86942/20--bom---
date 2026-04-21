@@ -3,21 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ImportResponse(BaseModel):
-    dataset_id: str
-    status: str
-    summary: dict[str, int]
-    errors: list[dict[str, object]] = Field(default_factory=list)
-
-
-class DatasetDetailResponse(BaseModel):
-    dataset_id: str
-    rows: list[dict[str, object]] = Field(default_factory=list)
-    subtree_aggregates: dict[str, dict[str, object]] = Field(default_factory=dict)
-    warnings: list[dict[str, object]] = Field(default_factory=list)
-
-
-class DatasetQueryParams(BaseModel):
+class QuerySnapshot(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     search: str = ""
@@ -28,3 +14,10 @@ class DatasetQueryParams(BaseModel):
     status: str = ""
     sort_by: str = Field(default="sort_index", alias="sortBy")
     sort_order: str = Field(default="asc", alias="sortOrder")
+
+
+class ExportRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    mode: str = "current_view"
+    query: QuerySnapshot = Field(default_factory=QuerySnapshot)

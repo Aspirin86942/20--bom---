@@ -3,7 +3,9 @@ from io import BytesIO
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
 
+from app.core.dataset_store import dataset_store
 from app.main import app
+from app.schemas.dataset_models import DatasetQueryParams
 
 
 client = TestClient(app)
@@ -45,6 +47,65 @@ def test_import_and_fetch_dataset() -> None:
 
     assert detail_response.status_code == 200
     assert detail_response.json()["rows"][0]["code"] == "A"
+
+
+def test_dataset_query_params_accept_camel_case_aliases() -> None:
+    params = DatasetQueryParams.model_validate(
+        {
+            "search": "主",
+            "materialAttr": "自制",
+            "amountMin": "10",
+            "levelMin": 1,
+            "levelMax": 3,
+            "sortBy": "code",
+            "sortOrder": "desc",
+        }
+    )
+
+    assert params.search == "主"
+    assert params.material_attr == "自制"
+    assert params.amount_min == "10"
+    assert params.level_min == 1
+    assert params.level_max == 3
+    assert params.sort_by == "code"
+    assert params.sort_order == "desc"
+
+
+def test_fetch_dataset_accepts_camel_case_query_params() -> None:
+    dataset_id = "camel-query-dataset"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [
+                {
+                    "id": "row_1",
+                    "parent_id": "root_1",
+                    "level": 1,
+                    "code": "A",
+                    "name": "主模块",
+                    "attr": "自制",
+                    "qty_actual": "1",
+                    "amount": "10",
+                }
+            ],
+            "subtree_aggregates": {},
+            "warnings": [],
+        },
+    )
+
+    response = client.get(
+        f"/api/datasets/{dataset_id}",
+        params={
+            "materialAttr": "自制",
+            "amountMin": "5",
+            "sortBy": "code",
+            "sortOrder": "asc",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["dataset_id"] == dataset_id
+    assert response.json()["rows"][0]["code"] == "A"
 
 
 def test_fetch_dataset_returns_404_error_model_when_dataset_missing() -> None:
