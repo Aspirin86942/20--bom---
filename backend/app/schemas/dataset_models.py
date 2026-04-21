@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -22,7 +24,7 @@ class DatasetQueryParams(BaseModel):
 
     search: str = ""
     material_attr: str = Field(default="", alias="materialAttr")
-    amount_min: str = Field(default="", alias="amountMin")
+    amount_min: Decimal | None = Field(default=None, alias="amountMin")
     level_min: int | None = Field(default=None, alias="levelMin")
     level_max: int | None = Field(default=None, alias="levelMax")
     status: str = ""

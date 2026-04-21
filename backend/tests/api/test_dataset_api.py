@@ -1,3 +1,4 @@
+from decimal import Decimal
 from io import BytesIO
 
 from fastapi.testclient import TestClient
@@ -64,7 +65,7 @@ def test_dataset_query_params_accept_camel_case_aliases() -> None:
 
     assert params.search == "主"
     assert params.material_attr == "自制"
-    assert params.amount_min == "10"
+    assert params.amount_min == Decimal("10")
     assert params.level_min == 1
     assert params.level_max == 3
     assert params.sort_by == "code"
@@ -86,7 +87,30 @@ def test_fetch_dataset_accepts_camel_case_query_params() -> None:
                     "attr": "自制",
                     "qty_actual": "1",
                     "amount": "10",
-                }
+                    "sort_index": 2,
+                },
+                {
+                    "id": "row_2",
+                    "parent_id": "root_1",
+                    "level": 1,
+                    "code": "B",
+                    "name": "子模块",
+                    "attr": "自制",
+                    "qty_actual": "1",
+                    "amount": "10",
+                    "sort_index": 1,
+                },
+                {
+                    "id": "row_3",
+                    "parent_id": "root_1",
+                    "level": 1,
+                    "code": "C",
+                    "name": "外部件",
+                    "attr": "外购",
+                    "qty_actual": "1",
+                    "amount": "10",
+                    "sort_index": 3,
+                },
             ],
             "subtree_aggregates": {},
             "warnings": [],
@@ -96,16 +120,78 @@ def test_fetch_dataset_accepts_camel_case_query_params() -> None:
     response = client.get(
         f"/api/datasets/{dataset_id}",
         params={
+            "search": "模块",
             "materialAttr": "自制",
-            "amountMin": "5",
             "sortBy": "code",
-            "sortOrder": "asc",
+            "sortOrder": "desc",
         },
     )
 
     assert response.status_code == 200
     assert response.json()["dataset_id"] == dataset_id
-    assert response.json()["rows"][0]["code"] == "A"
+    assert [row["code"] for row in response.json()["rows"]] == ["B", "A"]
+
+
+def test_fetch_dataset_rejects_invalid_level_min_query_param() -> None:
+    dataset_id = "invalid-level-query-dataset"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [
+                {
+                    "id": "row_1",
+                    "parent_id": "root_1",
+                    "level": 1,
+                    "code": "A",
+                    "name": "主模块",
+                    "attr": "自制",
+                    "qty_actual": "1",
+                    "amount": "10",
+                    "sort_index": 1,
+                }
+            ],
+            "subtree_aggregates": {},
+            "warnings": [],
+        },
+    )
+
+    response = client.get(
+        f"/api/datasets/{dataset_id}",
+        params={"levelMin": "abc"},
+    )
+
+    assert response.status_code == 422
+
+
+def test_fetch_dataset_rejects_invalid_amount_min_query_param() -> None:
+    dataset_id = "invalid-amount-query-dataset"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [
+                {
+                    "id": "row_1",
+                    "parent_id": "root_1",
+                    "level": 1,
+                    "code": "A",
+                    "name": "主模块",
+                    "attr": "自制",
+                    "qty_actual": "1",
+                    "amount": "10",
+                    "sort_index": 1,
+                }
+            ],
+            "subtree_aggregates": {},
+            "warnings": [],
+        },
+    )
+
+    response = client.get(
+        f"/api/datasets/{dataset_id}",
+        params={"amountMin": "abc"},
+    )
+
+    assert response.status_code == 422
 
 
 def test_fetch_dataset_returns_404_error_model_when_dataset_missing() -> None:
