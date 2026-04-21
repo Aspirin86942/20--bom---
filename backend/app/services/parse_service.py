@@ -166,7 +166,8 @@ def parse_rows_to_flat_nodes(rows: list[dict[str, object]]) -> tuple[list[FlatRo
             "code": str(raw["子项物料编码"]),
             "name": str(raw["物料名称"]),
             "spec_model": _safe_str(raw["规格型号"]),
-            "attr": str(raw["物料属性"]),
+            # 空属性需要保留为空字符串，后续异常扫描才能区分“缺失”与“明确填值”。
+            "attr": _safe_str(raw["物料属性"]),
             "bom_version": _safe_str(raw["BOM版本"]),
             "data_status": _safe_str(raw["数据状态"]),
             "unit": _safe_str(raw["单位"]),

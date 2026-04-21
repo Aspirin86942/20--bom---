@@ -4,6 +4,7 @@ from io import BytesIO
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
+from app.services.anomaly_service import scan_anomalies
 from app.services.aggregate_service import build_subtree_aggregates
 from app.services.index_service import build_indexes
 from app.services.parse_service import parse_rows_to_flat_nodes
@@ -96,15 +97,21 @@ def import_dataset(file_obj: BytesIO) -> ImportResult:
         }
     logger.info("路径索引构建完成")
 
+    logger.info("开始扫描异常规则...")
+    anomalies = scan_anomalies(rows_with_indexes)
+    logger.info(f"异常扫描完成，异常数: {len(anomalies)}")
+
     return {
         "status": "success",
         "summary": {
             "total_rows": len(rows),
             "valid_rows": len(flat_rows),
-            "warning_count": 0,
+            "warning_count": len(anomalies),
         },
         "rows": rows_with_indexes,
         "indexes": indexes,
         "subtree_aggregates": subtree_aggregates,
-        "warnings": [],
+        # warnings 作为对外展示的异常摘要，和 anomalies 保持一致，避免详情页永远读到空列表。
+        "warnings": anomalies,
+        "anomalies": anomalies,
     }

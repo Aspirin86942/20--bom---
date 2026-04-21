@@ -58,6 +58,7 @@ def test_import_dataset_returns_rows_and_subtree_aggregates() -> None:
     assert result["subtree_aggregates"]["row_3"]["amount_by_attr"]["自制"] == Decimal("10")
     assert result["subtree_aggregates"]["row_3"]["amount_by_attr"]["外购"] == Decimal("5")
     assert result["warnings"] == []
+    assert result["anomalies"] == []
 
 
 def test_import_dataset_returns_failed_summary_when_parse_errors_exist() -> None:
@@ -74,3 +75,25 @@ def test_import_dataset_returns_failed_summary_when_parse_errors_exist() -> None
     assert result["summary"]["fatal_count"] == 1
     assert result["summary"]["warning_count"] == 0
     assert result["errors"][0]["code"] == "INVALID_LEVEL"
+
+
+def test_import_dataset_populates_anomalies_for_business_rules() -> None:
+    result = import_dataset(
+        build_workbook(
+            [
+                ["0", "ROOT", "总成", "虚拟", 1, 0],
+                [".1", "A", "主模块", "", 0, 0],
+                ["..2", "B", "子模块", "外购", -1, 5],
+            ]
+        )
+    )
+
+    assert result["status"] == "success"
+    assert result["summary"]["warning_count"] == 4
+    assert [item["code"] for item in result["anomalies"]] == [
+        "MISSING_ATTR",
+        "NON_POSITIVE_QTY",
+        "MISSING_OR_ZERO_AMOUNT",
+        "NON_POSITIVE_QTY",
+    ]
+    assert result["warnings"] == result["anomalies"]

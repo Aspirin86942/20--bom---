@@ -204,6 +204,159 @@ def test_fetch_dataset_returns_404_error_model_when_dataset_missing() -> None:
     assert response.json()["detail"]["retryable"] is False
 
 
+def test_fetch_dataset_anomalies_supports_severity_filter() -> None:
+    dataset_id = "dataset-anomalies"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [],
+            "subtree_aggregates": {},
+            "warnings": [],
+            "anomalies": [
+                {
+                    "id": "row_1:MISSING_ATTR:attr",
+                    "severity": "warning",
+                    "code": "MISSING_ATTR",
+                    "node_id": "row_1",
+                    "field": "attr",
+                    "message": "物料属性缺失",
+                    "action": "请补充物料属性后重新导入",
+                },
+                {
+                    "id": "row_2:NON_POSITIVE_QTY:qty_actual",
+                    "severity": "warning",
+                    "code": "NON_POSITIVE_QTY",
+                    "node_id": "row_2",
+                    "field": "qty_actual",
+                    "message": "实际数量小于等于 0",
+                    "action": "请修正实际数量后重新导入",
+                },
+            ],
+        },
+    )
+
+    response = client.get(f"/api/datasets/{dataset_id}/anomalies", params={"severity": "warning"})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "dataset_id": dataset_id,
+        "anomalies": [
+            {
+                "id": "row_1:MISSING_ATTR:attr",
+                "severity": "warning",
+                "code": "MISSING_ATTR",
+                "node_id": "row_1",
+                "field": "attr",
+                "message": "物料属性缺失",
+                "action": "请补充物料属性后重新导入",
+            },
+            {
+                "id": "row_2:NON_POSITIVE_QTY:qty_actual",
+                "severity": "warning",
+                "code": "NON_POSITIVE_QTY",
+                "node_id": "row_2",
+                "field": "qty_actual",
+                "message": "实际数量小于等于 0",
+                "action": "请修正实际数量后重新导入",
+            },
+        ],
+    }
+
+
+def test_fetch_dataset_anomalies_returns_404_when_dataset_missing() -> None:
+    safe_client = TestClient(app, raise_server_exceptions=False)
+
+    response = safe_client.get("/api/datasets/not-exists/anomalies")
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "DATASET_NOT_FOUND"
+    assert response.json()["detail"]["retryable"] is False
+
+
+def test_fetch_dataset_anomalies_returns_empty_list_for_unknown_severity() -> None:
+    dataset_id = "dataset-anomalies-severity-empty"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [],
+            "subtree_aggregates": {},
+            "warnings": [],
+            "anomalies": [
+                {
+                    "id": "row_1:MISSING_ATTR:attr",
+                    "severity": "warning",
+                    "code": "MISSING_ATTR",
+                    "node_id": "row_1",
+                    "field": "attr",
+                    "message": "物料属性缺失",
+                    "action": "请补充物料属性后重新导入",
+                }
+            ],
+        },
+    )
+
+    response = client.get(f"/api/datasets/{dataset_id}/anomalies", params={"severity": "fatal"})
+
+    assert response.status_code == 200
+    assert response.json() == {"dataset_id": dataset_id, "anomalies": []}
+
+
+def test_fetch_dataset_anomalies_returns_empty_list_when_dataset_has_no_anomalies() -> None:
+    dataset_id = "dataset-anomalies-empty"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [],
+            "subtree_aggregates": {},
+            "warnings": [],
+            "anomalies": [],
+        },
+    )
+
+    response = client.get(f"/api/datasets/{dataset_id}/anomalies")
+
+    assert response.status_code == 200
+    assert response.json() == {"dataset_id": dataset_id, "anomalies": []}
+
+
+def test_fetch_dataset_returns_warnings_matching_anomalies_when_present() -> None:
+    dataset_id = "dataset-warnings-from-anomalies"
+    dataset_store.save(
+        dataset_id,
+        {
+            "rows": [],
+            "subtree_aggregates": {},
+            "anomalies": [
+                {
+                    "id": "row_1:MISSING_ATTR:attr",
+                    "severity": "warning",
+                    "code": "MISSING_ATTR",
+                    "node_id": "row_1",
+                    "field": "attr",
+                    "message": "物料属性缺失",
+                    "action": "请补充物料属性后重新导入",
+                }
+            ],
+        },
+    )
+
+    response = client.get(f"/api/datasets/{dataset_id}")
+
+    assert response.status_code == 200
+    assert response.json()["warnings"] == response.json()["warnings"]  # smoke check for presence
+    assert response.json()["warnings"] == [
+        {
+            "id": "row_1:MISSING_ATTR:attr",
+            "severity": "warning",
+            "code": "MISSING_ATTR",
+            "node_id": "row_1",
+            "field": "attr",
+            "message": "物料属性缺失",
+            "action": "请补充物料属性后重新导入",
+        }
+    ]
+
+
 def test_import_invalid_workbook_returns_400_error_model() -> None:
     safe_client = TestClient(app, raise_server_exceptions=False)
 

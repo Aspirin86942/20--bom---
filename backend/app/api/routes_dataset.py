@@ -77,7 +77,11 @@ def get_dataset(
         dataset_id=dataset_id,
         rows=filtered_rows,
         subtree_aggregates=cast(dict[str, dict[str, object]], payload.get("subtree_aggregates", {})),
-        warnings=cast(list[dict[str, object]], payload.get("warnings", [])),
+        # 兼容旧数据集：如果 warnings 还没落盘，直接回退到 anomalies，保证前端拿到一致语义。
+        warnings=cast(
+            list[dict[str, object]],
+            payload.get("warnings") or payload.get("anomalies", []),
+        ),
     )
 
 
@@ -113,4 +117,31 @@ def get_where_used(
     return {
         "code": code,
         "paths": where_used.get(code, []),
+    }
+
+
+@router.get("/api/datasets/{dataset_id}/anomalies")
+def get_dataset_anomalies(
+    dataset_id: str,
+    severity: str | None = Query(default=None),
+) -> dict[str, object]:
+    payload = dataset_store.get(dataset_id)
+    if payload is None:
+        # anomalies 和详情/where-used 共用同一份缓存，找不到数据集时保持相同的结构化 404。
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "code": "DATASET_NOT_FOUND",
+                "message": f"未找到数据集: {dataset_id}",
+                "retryable": False,
+            },
+        )
+
+    anomalies = cast(list[dict[str, object]], payload.get("anomalies", []))
+    if severity:
+        anomalies = [item for item in anomalies if str(item.get("severity", "")) == severity]
+
+    return {
+        "dataset_id": dataset_id,
+        "anomalies": anomalies,
     }
