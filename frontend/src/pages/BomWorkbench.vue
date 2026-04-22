@@ -71,7 +71,8 @@ const { setSelectedNodeId, setViewMode, setExpandLevel, setQuerySnapshot } =
   useWorkbenchState();
 const rowsRef = computed(() => state.rows as Array<Record<string, unknown>>);
 const aggregatesRef = computed(() => state.subtreeAggregates);
-const { filters, filteredRows } = useFilters(rowsRef);
+const { filters, filteredRows, buildQuerySnapshot, buildExportQuery } =
+  useFilters(rowsRef);
 const { focusRow, selectedRows, selectionSummary } = useSelection();
 const includeCollapsedDescendants = ref(false);
 const visibleRowsRef = computed(
@@ -120,7 +121,14 @@ async function handleExport(): Promise<void> {
     return;
   }
 
-  await exportDataset(state.datasetId);
+  const querySnapshot = buildQuerySnapshot();
+  setQuerySnapshot(querySnapshot);
+
+  await exportDataset(
+    state.datasetId,
+    "current_view",
+    buildExportQuery(querySnapshot),
+  );
 }
 </script>
 
