@@ -23,21 +23,25 @@
         @focus-row="handleFocusRow"
         @selection-change="selectedRows = $event"
       />
-      <AnalysisPanel
-        :current-summary="currentSummary"
-        :focus-summary="focusSummary"
-        :selection-summary="selectionSummary"
-        :include-collapsed-descendants="includeCollapsedDescendants"
-        :amount-by-attr="
-          focusRow
-            ? (state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ??
-              {})
-            : {}
-        "
-        @update:include-collapsed-descendants="
-          includeCollapsedDescendants = $event
-        "
-      />
+      <div class="side-panels">
+        <AnalysisPanel
+          :current-summary="currentSummary"
+          :focus-summary="focusSummary"
+          :selection-summary="selectionSummary"
+          :include-collapsed-descendants="includeCollapsedDescendants"
+          :amount-by-attr="
+            focusRow
+              ? (state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ??
+                {})
+              : {}
+          "
+          @update:include-collapsed-descendants="
+            includeCollapsedDescendants = $event
+          "
+        />
+        <NodeDetailPanel :node="focusNode" />
+        <AnomalyCenter :items="anomalyItems" />
+      </div>
     </div>
     <BomGridStatusBar
       :row-count="currentSummary.rowCount"
@@ -51,10 +55,12 @@
 import { computed, ref } from "vue";
 
 import { exportDataset } from "../api/dataset";
+import AnomalyCenter from "../components/analysis/AnomalyCenter.vue";
 import AnalysisPanel from "../components/analysis/AnalysisPanel.vue";
 import BomGrid from "../components/bom/BomGrid.vue";
 import BomGridStatusBar from "../components/bom/BomGridStatusBar.vue";
 import BomGridToolbar from "../components/bom/BomGridToolbar.vue";
+import NodeDetailPanel from "../components/bom/NodeDetailPanel.vue";
 import ErrorDrawer from "../components/common/ErrorDrawer.vue";
 import UploadPanel from "../components/upload/UploadPanel.vue";
 import { useAnalysis } from "../composables/useAnalysis";
@@ -74,6 +80,12 @@ const aggregatesRef = computed(() => state.subtreeAggregates);
 const { filters, filteredRows, buildQuerySnapshot, buildExportQuery } =
   useFilters(rowsRef);
 const { focusRow, selectedRows, selectionSummary } = useSelection();
+const focusNode = computed<Record<string, unknown> | null>(
+  () => focusRow.value as Record<string, unknown> | null,
+);
+const anomalyItems = computed<Array<Record<string, unknown>>>(() => {
+  return (state.warnings as Array<Record<string, unknown>>) ?? [];
+});
 const includeCollapsedDescendants = ref(false);
 const visibleRowsRef = computed(
   () => filteredRows.value as Array<Record<string, unknown>>,
@@ -147,6 +159,13 @@ async function handleExport(): Promise<void> {
   grid-template-columns: 1fr 360px;
   gap: var(--spacing-md);
   flex: 1;
+  min-height: 0;
+}
+
+.side-panels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
   min-height: 0;
 }
 

@@ -27,7 +27,6 @@ import AttrBreakdown from "./AttrBreakdown.vue";
 import SelectionSummary from "./SelectionSummary.vue";
 import SummaryCards from "./SummaryCards.vue";
 
-
 defineProps<{
   currentSummary: Record<string, unknown>;
   focusSummary: Record<string, unknown>;
@@ -49,7 +48,7 @@ defineEmits<{
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  height: 100%;
+  max-height: 420px;
   overflow-y: auto;
 }
 
