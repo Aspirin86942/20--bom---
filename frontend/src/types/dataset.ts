@@ -25,7 +25,6 @@ export interface FlatRow {
   supplier: string;
 }
 
-
 export interface DatasetState {
   datasetId: string;
   rows: FlatRow[];
@@ -33,4 +32,21 @@ export interface DatasetState {
   errors: Array<Record<string, unknown>>;
   warnings: Array<Record<string, unknown>>;
   loading: boolean;
+}
+
+export type ViewMode = "tree" | "table" | "path";
+
+export interface WorkbenchQuerySnapshot {
+  search: string;
+  materialAttr: string;
+  amountMin: string;
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+}
+
+export interface WorkbenchState {
+  viewMode: ViewMode;
+  expandLevel: number;
+  selectedNodeId: string;
+  querySnapshot: WorkbenchQuerySnapshot;
 }

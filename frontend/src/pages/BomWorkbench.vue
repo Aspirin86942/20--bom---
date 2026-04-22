@@ -1,7 +1,9 @@
 <template>
   <section class="workbench">
-    <UploadPanel @select="importFile" />
-    <ErrorDrawer :errors="state.errors.length ? state.errors : state.warnings" />
+    <UploadPanel @select="handleImportFile" />
+    <ErrorDrawer
+      :errors="state.errors.length ? state.errors : state.warnings"
+    />
     <BomGridToolbar
       :search="filters.search"
       :material-attr="filters.materialAttr"
@@ -18,7 +20,7 @@
         :rows="filteredRows"
         :flat-rows="rowsRef"
         :expand-all="expanded"
-        @focus-row="focusRow = $event"
+        @focus-row="handleFocusRow"
         @selection-change="selectedRows = $event"
       />
       <AnalysisPanel
@@ -28,7 +30,8 @@
         :include-collapsed-descendants="includeCollapsedDescendants"
         :amount-by-attr="
           focusRow
-            ? state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ?? {}
+            ? (state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ??
+              {})
             : {}
         "
         @update:include-collapsed-descendants="
@@ -58,9 +61,14 @@ import { useAnalysis } from "../composables/useAnalysis";
 import { useDataset } from "../composables/useDataset";
 import { useFilters } from "../composables/useFilters";
 import { useSelection } from "../composables/useSelection";
-
+import {
+  defaultWorkbenchQuerySnapshot,
+  useWorkbenchState,
+} from "../composables/useWorkbenchState";
 
 const { state, importFile } = useDataset();
+const { setSelectedNodeId, setViewMode, setExpandLevel, setQuerySnapshot } =
+  useWorkbenchState();
 const rowsRef = computed(() => state.rows as Array<Record<string, unknown>>);
 const aggregatesRef = computed(() => state.subtreeAggregates);
 const { filters, filteredRows } = useFilters(rowsRef);
@@ -77,6 +85,35 @@ const { currentSummary, focusSummary } = useAnalysis(
 );
 const expanded = ref(true);
 
+function resetWorkbenchUiState(): void {
+  filters.search = "";
+  filters.materialAttr = "";
+  filters.amountMin = "";
+  focusRow.value = null;
+  selectedRows.value = [];
+  includeCollapsedDescendants.value = false;
+  expanded.value = true;
+  setSelectedNodeId("");
+  setViewMode("tree");
+  setExpandLevel(2);
+  setQuerySnapshot(defaultWorkbenchQuerySnapshot);
+}
+
+function handleFocusRow(row: Record<string, unknown> | null): void {
+  focusRow.value = row;
+  setSelectedNodeId(String(row?.id ?? ""));
+}
+
+async function handleImportFile(file: File): Promise<void> {
+  await importFile(file);
+
+  // 仅在导入成功后清空旧上下文，失败时保留现有筛选和焦点。
+  if (!state.datasetId) {
+    return;
+  }
+
+  resetWorkbenchUiState();
+}
 
 async function handleExport(): Promise<void> {
   if (!state.datasetId) {
