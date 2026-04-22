@@ -3,7 +3,6 @@ import { describe, it, expect } from "vitest";
 import type { FlatRow } from "../types/dataset";
 import { collectMatchedSubtrees } from "./useBomData";
 
-
 describe("collectMatchedSubtrees", () => {
   // 构建测试数据：树形结构
   // root (0)
@@ -238,5 +237,12 @@ describe("collectMatchedSubtrees", () => {
     // 只包含不存在的ID（被添加但没有子节点）
     expect(result.size).toBe(1);
     expect(result.has("999")).toBe(true);
+  });
+
+  it("应该在 children_map 遍历下保持子树结果一致", () => {
+    const matchedIds = new Set(["1"]);
+    const result = collectMatchedSubtrees(matchedIds, testRows);
+
+    expect(result).toEqual(new Set(["1", "2", "3"]));
   });
 });
