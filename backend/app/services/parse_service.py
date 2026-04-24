@@ -100,6 +100,16 @@ def _to_decimal(value: object, *, field: str, row_index: int, errors: list[Parse
     return parsed
 
 
+def _resolve_amount(amount: Decimal, unit_price: Decimal, qty_actual: Decimal) -> Decimal:
+    """修正源 Excel 因金额列精度不足导出的 0 值。"""
+    if amount != 0 or unit_price <= 0 or qty_actual <= 0:
+        return amount
+
+    # BOM 成本导出中金额列可能按两位小数缓存为 0，但单价仍保留精确值；
+    # 这里在解析源头回填，避免后续异常扫描把小额物料误判为成本缺失。
+    return unit_price * qty_actual
+
+
 def build_root_context(raw: dict[str, object], row_index: int) -> FlatRowItem:
     return {
         "id": f"root_{row_index}",
@@ -152,6 +162,8 @@ def parse_rows_to_flat_nodes(rows: list[dict[str, object]]) -> tuple[list[FlatRo
         amount = _to_decimal(raw["金额"], field="金额", row_index=row_index, errors=errors)
         if qty_actual is None or amount is None:
             continue
+        unit_price = _safe_decimal(raw["单价"])
+        amount = _resolve_amount(amount, unit_price, qty_actual)
 
         current = {
             "id": f"row_{row_index}",
@@ -175,7 +187,7 @@ def parse_rows_to_flat_nodes(rows: list[dict[str, object]]) -> tuple[list[FlatRo
             "qty_numerator": _safe_int(raw["用量:分子"]),
             "qty_denominator": _safe_int(raw["用量:分母"]),
             "currency": _safe_str(raw["币别"]),
-            "unit_price": _safe_decimal(raw["单价"]),
+            "unit_price": unit_price,
             "tax_rate": _safe_decimal(raw["税率%"]),
             "unit_price_with_tax": _safe_decimal(raw["含税单价"]),
             "total_price_with_tax": _safe_decimal(raw["价税合计"]),

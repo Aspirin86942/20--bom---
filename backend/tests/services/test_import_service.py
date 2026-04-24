@@ -23,7 +23,7 @@ def build_workbook(rows: list[list[object]]) -> BytesIO:
         extended_row.append(row[3] if len(row) > 3 else "")  # 物料属性
         extended_row.extend(["", "", "", ""])  # BOM版本, 数据状态, 单位, 子项类型
         extended_row.extend([0, 0])  # 用量:分子, 用量:分母
-        extended_row.extend(["", Decimal("0")])  # 币别, 单价
+        extended_row.extend(["", row[6] if len(row) > 6 else Decimal("0")])  # 币别, 单价
         extended_row.append(row[5] if len(row) > 5 else Decimal("0"))  # 金额
         extended_row.extend([Decimal("0"), Decimal("0"), Decimal("0")])  # 税率%, 含税单价, 价税合计
         extended_row.extend(["", "", 0])  # 材料单价来源, 供应商, 标准用量
@@ -97,3 +97,19 @@ def test_import_dataset_populates_anomalies_for_business_rules() -> None:
         "NON_POSITIVE_QTY",
     ]
     assert result["warnings"] == result["anomalies"]
+
+
+def test_import_dataset_does_not_flag_rounded_zero_amount_when_unit_price_is_present() -> None:
+    result = import_dataset(
+        build_workbook(
+            [
+                ["0", "ROOT", "总成", "虚拟", 1, 0],
+                [".1", "Y.C.40050", "贴片电容", "外购", 2, 0, Decimal("0.001858")],
+            ]
+        )
+    )
+
+    assert result["status"] == "success"
+    assert result["rows"][0]["amount"] == Decimal("0.003716")
+    assert result["summary"]["warning_count"] == 0
+    assert result["anomalies"] == []

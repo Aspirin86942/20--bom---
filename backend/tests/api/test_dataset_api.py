@@ -1,4 +1,4 @@
-from decimal import Decimal
+﻿from decimal import Decimal
 from io import BytesIO
 
 from fastapi.testclient import TestClient
@@ -12,21 +12,33 @@ from app.schemas.dataset_models import DatasetQueryParams
 client = TestClient(app)
 
 
-def build_file_bytes() -> bytes:
+BOM_HEADERS = [
+    "BOM层级", "子项物料编码", "物料名称", "规格型号", "物料属性",
+    "BOM版本", "数据状态", "单位", "子项类型", "用量:分子", "用量:分母",
+    "币别", "单价", "金额", "税率%", "含税单价", "价税合计",
+    "材料单价来源", "供应商", "标准用量", "实际数量",
+]
+
+
+def build_file_bytes_with_rows(rows: list[list[object]]) -> bytes:
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "子项明细"
-    sheet.append([
-        "BOM层级", "子项物料编码", "物料名称", "规格型号", "物料属性",
-        "BOM版本", "数据状态", "单位", "子项类型", "用量:分子", "用量:分母",
-        "币别", "单价", "金额", "税率%", "含税单价", "价税合计",
-        "材料单价来源", "供应商", "标准用量", "实际数量"
-    ])
-    sheet.append(["0", "ROOT", "总成", "", "虚拟", "", "", "", "", 0, 0, "", 0, 0, 0, 0, 0, "", "", 0, 1])
-    sheet.append([".1", "A", "主模块", "", "自制", "", "", "", "", 0, 0, "", 0, 10, 0, 0, 0, "", "", 0, 1])
+    sheet.append(BOM_HEADERS)
+    for row in rows:
+        sheet.append(row)
     buffer = BytesIO()
     workbook.save(buffer)
     return buffer.getvalue()
+
+
+def build_file_bytes() -> bytes:
+    return build_file_bytes_with_rows(
+        [
+            ["0", "ROOT", "总成", "", "虚拟", "", "", "", "", 0, 0, "", 0, 0, 0, 0, 0, "", "", 0, 1],
+            [".1", "A", "主模块", "", "自制", "", "", "", "", 0, 0, "", 0, 10, 0, 0, 0, "", "", 0, 1],
+        ]
+    )
 
 
 def test_import_and_fetch_dataset() -> None:
@@ -48,6 +60,35 @@ def test_import_and_fetch_dataset() -> None:
 
     assert detail_response.status_code == 200
     assert detail_response.json()["rows"][0]["code"] == "A"
+
+
+def test_import_and_fetch_dataset_does_not_warn_for_rounded_zero_amount() -> None:
+    response = client.post(
+        "/api/import",
+        files={
+            "file": (
+                "bom.xlsx",
+                build_file_bytes_with_rows(
+                    [
+                        ["0", "ROOT", "总成", "", "虚拟", "", "", "", "", 0, 0, "", 0, 0, 0, 0, 0, "", "", 0, 1],
+                        [
+                            ".1", "Y.C.40050", "贴片电容", "", "外购", "", "", "", "标准件",
+                            0, 0, "", Decimal("0.001858"), 0, 0, 0, 0, "采购订单", "深圳市天河星供应链有限公司", 0, 2,
+                        ],
+                    ]
+                ),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    dataset_id = response.json()["dataset_id"]
+    detail_response = client.get(f"/api/datasets/{dataset_id}")
+
+    assert detail_response.status_code == 200
+    assert detail_response.json()["warnings"] == []
+    assert detail_response.json()["rows"][0]["amount"] == "0.003716"
 
 
 def test_dataset_query_params_accept_camel_case_aliases() -> None:
@@ -343,7 +384,6 @@ def test_fetch_dataset_returns_warnings_matching_anomalies_when_present() -> Non
     response = client.get(f"/api/datasets/{dataset_id}")
 
     assert response.status_code == 200
-    assert response.json()["warnings"] == response.json()["warnings"]  # smoke check for presence
     assert response.json()["warnings"] == [
         {
             "id": "row_1:MISSING_ATTR:attr",

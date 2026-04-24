@@ -10,6 +10,7 @@ def build_row(
     attr: str = "自制",
     qty: object = 1,
     amount: object = Decimal("0"),
+    unit_price: object = Decimal("0"),
 ) -> dict[str, object]:
     return {
         "BOM层级": level,
@@ -24,7 +25,7 @@ def build_row(
         "用量:分子": 0,
         "用量:分母": 0,
         "币别": "",
-        "单价": Decimal("0"),
+        "单价": unit_price,
         "税率%": Decimal("0"),
         "含税单价": Decimal("0"),
         "价税合计": Decimal("0"),
@@ -94,3 +95,23 @@ def test_parse_rows_to_flat_nodes_reports_invalid_decimal_value() -> None:
     assert len(errors) == 1
     assert errors[0]["code"] == "INVALID_DECIMAL"
     assert errors[0]["field"] == "实际数量"
+
+
+def test_parse_rows_to_flat_nodes_derives_zero_amount_from_precise_unit_price() -> None:
+    rows = [
+        build_row("0", "ROOT", "总成", attr="虚拟", qty=1, amount=0),
+        build_row(
+            ".1",
+            "Y.C.40050",
+            "贴片电容",
+            attr="外购",
+            qty=2,
+            amount=Decimal("0"),
+            unit_price=Decimal("0.001858"),
+        ),
+    ]
+
+    flat_rows, errors = parse_rows_to_flat_nodes(rows)
+
+    assert errors == []
+    assert flat_rows[0]["amount"] == Decimal("0.003716")
