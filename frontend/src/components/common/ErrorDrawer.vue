@@ -2,15 +2,40 @@
   <aside v-if="errors.length">
     <h3>导入提示</h3>
     <ul>
-      <li v-for="item in errors" :key="String(item.code)">
-        {{ item.code }} - {{ item.message }}
+      <li v-for="item in groupedErrors" :key="item.key">
+        {{ item.code }} - {{ item.message }}<span v-if="item.count > 1">（{{ item.count }} 条）</span>
       </li>
     </ul>
   </aside>
 </template>
 
 <script setup lang="ts">
-defineProps<{ errors: Array<Record<string, unknown>> }>();
+import { computed } from "vue";
+
+const props = defineProps<{ errors: Array<Record<string, unknown>> }>();
+
+const groupedErrors = computed(() => {
+  const groups = new Map<
+    string,
+    { key: string; code: string; message: string; count: number }
+  >();
+
+  for (const item of props.errors) {
+    const code = String(item.code ?? "UNKNOWN");
+    const message = String(item.message ?? "未提供异常描述");
+    const key = `${code}\u0000${message}`;
+    const existing = groups.get(key);
+
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+
+    groups.set(key, { key, code, message, count: 1 });
+  }
+
+  return [...groups.values()];
+});
 </script>
 
 <style scoped>

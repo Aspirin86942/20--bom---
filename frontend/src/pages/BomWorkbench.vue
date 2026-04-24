@@ -20,6 +20,8 @@
         :rows="filteredRows"
         :flat-rows="rowsRef"
         :expand-all="expanded"
+        :display-mode="gridDisplayMode"
+        :search="filters.search"
         @focus-row="handleFocusRow"
         @selection-change="selectedRows = $event"
       />
@@ -66,6 +68,7 @@ import UploadPanel from "../components/upload/UploadPanel.vue";
 import { useAnalysis } from "../composables/useAnalysis";
 import { useDataset } from "../composables/useDataset";
 import { useFilters } from "../composables/useFilters";
+import { resolveBomGridDisplayMode } from "../composables/useGridDisplayMode";
 import { useSelection } from "../composables/useSelection";
 import {
   defaultWorkbenchQuerySnapshot,
@@ -79,6 +82,7 @@ const rowsRef = computed(() => state.rows as Array<Record<string, unknown>>);
 const aggregatesRef = computed(() => state.subtreeAggregates);
 const { filters, filteredRows, buildQuerySnapshot, buildExportQuery } =
   useFilters(rowsRef);
+const gridDisplayMode = computed(() => resolveBomGridDisplayMode(filters));
 const { focusRow, selectedRows, selectionSummary } = useSelection();
 const focusNode = computed<Record<string, unknown> | null>(
   () => focusRow.value as Record<string, unknown> | null,
@@ -148,10 +152,11 @@ async function handleExport(): Promise<void> {
 .workbench {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   padding: var(--spacing-lg);
   gap: var(--spacing-md);
   background-color: var(--color-bg-container);
+  overflow: hidden;
 }
 
 .layout {
@@ -167,6 +172,7 @@ async function handleExport(): Promise<void> {
   flex-direction: column;
   gap: var(--spacing-md);
   min-height: 0;
+  overflow: auto;
 }
 
 @media (max-width: 1200px) {

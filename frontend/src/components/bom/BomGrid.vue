@@ -3,13 +3,12 @@
     <vxe-table
       ref="gridRef"
       :data="rows"
+      height="100%"
       :row-config="{ keyField: 'id' }"
       :checkbox-config="{ highlight: true }"
-      :tree-config="{
-        transform: true,
-        rowField: 'id',
-        parentField: 'parent_id',
-      }"
+      :tree-config="treeConfig"
+      :virtual-y-config="virtualYConfig"
+      show-overflow="title"
       @cell-click="({ row }) => $emit('focus-row', row)"
       @checkbox-change="emitSelection"
       @checkbox-all="emitSelection"
@@ -18,7 +17,7 @@
       <vxe-column
         field="name"
         title="物料名称"
-        tree-node
+        :tree-node="isTreeMode"
         fixed="left"
         min-width="260"
       />
@@ -82,14 +81,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import type { FlatRow } from "../../types/dataset";
 import { collectMatchedSubtrees } from "../../composables/useBomData";
+import {
+  type BomGridDisplayMode,
+  shouldAutoExpandFilteredRows,
+} from "../../composables/useGridDisplayMode";
 
 const props = defineProps<{
   rows: Array<Record<string, unknown>>;
   flatRows: FlatRow[];
   expandAll?: boolean;
+  displayMode?: BomGridDisplayMode;
+  search?: string;
 }>();
 const emit = defineEmits<{
   "focus-row": [row: Record<string, unknown>];
@@ -100,10 +105,30 @@ const gridRef = ref<{
   setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => void;
   getCheckboxRecords?: () => Array<Record<string, unknown>>;
 } | null>(null);
+const isTreeMode = computed(() => (props.displayMode ?? "tree") === "tree");
+const treeConfig = computed(() =>
+  isTreeMode.value
+    ? {
+        transform: true,
+        rowField: "id",
+        parentField: "parent_id",
+      }
+    : undefined,
+);
+const virtualYConfig = {
+  enabled: true,
+  gt: 80,
+  oSize: 20,
+  preSize: 10,
+  scrollToTopOnChange: true,
+};
 
 watch(
   () => props.expandAll,
   (value) => {
+    if (!isTreeMode.value) {
+      return;
+    }
     if (value === undefined || !gridRef.value?.setAllTreeExpand) {
       return;
     }
@@ -111,16 +136,14 @@ watch(
   },
 );
 
-// 监听搜索结果变化，自动展开匹配节点的完整子树
-// 只在搜索过滤时触发（filteredRows < flatRows），避免初始加载时卡顿
+// 只在搜索定位时自动展开匹配节点的完整子树；属性/金额筛选走平铺列表，避免展开风暴。
 watch(
   () => props.rows,
   (newFiltered) => {
     if (!gridRef.value) return;
 
-    // 如果过滤后的行数等于总行数，说明没有搜索过滤，跳过展开逻辑
-    if (newFiltered.length === props.flatRows.length) {
-      console.log("[BomGrid] 无搜索过滤，跳过自动展开");
+    if (!shouldAutoExpandFilteredRows(props.displayMode ?? "tree", props.search ?? "")) {
+      console.log("[BomGrid] 非搜索定位场景，跳过自动展开");
       return;
     }
 

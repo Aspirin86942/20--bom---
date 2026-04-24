@@ -60,6 +60,7 @@ test("loads rows and keeps warning panel visible after import", async () => {
 
 
 test("filters rows by attr and amount from toolbar", async () => {
+    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => undefined);
     render(BomWorkbench);
 
     const input = screen.getByLabelText("上传 Excel").querySelector('input[type="file"]') as HTMLInputElement;
@@ -74,4 +75,8 @@ test("filters rows by attr and amount from toolbar", async () => {
 
     expect(await screen.findByText("子模块")).toBeInTheDocument();
     expect(screen.queryByText("主模块")).not.toBeInTheDocument();
+    expect(consoleLogSpy).not.toHaveBeenCalledWith(
+        "[BomGrid] 检测到搜索过滤，开始自动展开匹配节点...",
+    );
+    consoleLogSpy.mockRestore();
 });
