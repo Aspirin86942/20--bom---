@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/vue";
+import { render, screen, waitFor } from "@testing-library/vue";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 
@@ -18,6 +18,8 @@ vi.mock("../api/dataset", () => ({
             {
                 id: "row_3",
                 parent_id: "root_2",
+                level: 1,
+                bom_level_raw: ".1",
                 code: "A",
                 name: "主模块",
                 attr: "自制",
@@ -27,19 +29,38 @@ vi.mock("../api/dataset", () => ({
             {
                 id: "row_4",
                 parent_id: "row_3",
+                level: 2,
+                bom_level_raw: "..2",
                 code: "B",
                 name: "子模块",
                 attr: "外购",
                 qty_actual: "2",
                 amount: "5",
             },
+            {
+                id: "row_5",
+                parent_id: "row_4",
+                level: 3,
+                bom_level_raw: "...3",
+                code: "C",
+                name: "下级物料",
+                attr: "外购",
+                qty_actual: "1",
+                amount: "2",
+            },
         ],
         subtree_aggregates: {
             row_3: {
+                subtree_row_count: 3,
+                subtree_qty_sum: "4",
+                subtree_amount_sum: "17",
+                amount_by_attr: { 自制: "10", 外购: "7" },
+            },
+            row_4: {
                 subtree_row_count: 2,
                 subtree_qty_sum: "3",
-                subtree_amount_sum: "15",
-                amount_by_attr: { 自制: "10", 外购: "5" },
+                subtree_amount_sum: "7",
+                amount_by_attr: { 外购: "7" },
             },
         },
         warnings: [{ code: "AMOUNT_EMPTY", message: "金额为空" }],
@@ -56,6 +77,32 @@ test("loads rows and keeps warning panel visible after import", async () => {
 
     expect(await screen.findByText("主模块")).toBeInTheDocument();
     expect(screen.getByText("导入提示")).toBeInTheDocument();
+});
+
+
+test("renders BOM level values after import", async () => {
+    render(BomWorkbench);
+    const input = screen.getByLabelText("上传 Excel").querySelector('input[type="file"]') as HTMLInputElement;
+
+    await userEvent.upload(input, new File(["demo"], "bom.xlsx"));
+
+    expect(await screen.findByText(".1")).toBeInTheDocument();
+});
+
+
+test("highlights matched keyword in visible grid cells after search", async () => {
+    const { container } = render(BomWorkbench);
+    const input = screen.getByLabelText("上传 Excel").querySelector('input[type="file"]') as HTMLInputElement;
+
+    await userEvent.upload(input, new File(["demo"], "bom.xlsx"));
+    await userEvent.clear(screen.getByLabelText("搜索编码/名称"));
+    await userEvent.type(screen.getByLabelText("搜索编码/名称"), "主");
+
+    await waitFor(() => {
+        const highlight = container.querySelector('.search-highlight');
+        expect(highlight).not.toBeNull();
+        expect(highlight).toHaveTextContent("主");
+    });
 });
 
 

@@ -2,6 +2,7 @@ export interface FlatRow {
   id: string;
   parent_id: string;
   level: number;
+  bom_level_raw: string;
   code: string;
   name: string;
   attr: string;

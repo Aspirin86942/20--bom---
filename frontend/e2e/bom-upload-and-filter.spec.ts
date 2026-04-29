@@ -170,6 +170,26 @@ test.describe('BOM 上传和筛选功能', () => {
     console.log('✓ 搜索功能工作正常');
   });
 
+  test('搜索命中节点时应保留父级和子级上下文', async ({ page }) => {
+    await page.goto('/');
+
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles(testFile);
+
+    await expect(page.locator('.vxe-table')).toBeVisible({ timeout: 10000 });
+    await expect.poll(() => readCurrentViewRowCount(page), { timeout: 10000 }).toBeGreaterThan(0);
+
+    const searchInput = page.locator('input[aria-label="搜索编码/名称"]');
+    await searchInput.fill('B.WW.T0019AA');
+
+    await expect
+      .poll(() => readCurrentViewRowCount(page), { timeout: 10000 })
+      .toBeGreaterThan(2);
+    await expect(page.getByText('C.T.D0005AA')).toBeVisible();
+    await expect(page.getByText('B.WW.T0019AA')).toBeVisible();
+    await expect(page.getByText('B.P.C0001AA')).toBeVisible();
+  });
+
   test('应该能够展开和折叠所有节点', async ({ page }) => {
     await page.goto('/');
 
