@@ -1,9 +1,11 @@
 <template>
-  <aside v-if="errors.length">
-    <h3>导入提示</h3>
-    <ul>
-      <li v-for="item in groupedErrors" :key="item.key">
-        {{ item.code }} - {{ item.message }}<span v-if="item.count > 1">（{{ item.count }} 条）</span>
+  <aside v-if="errors.length" class="error-drawer">
+    <span class="error-drawer__title">导入提示</span>
+    <ul class="error-drawer__list">
+      <li v-for="item in groupedErrors" :key="item.key" class="error-drawer__item">
+        <span class="error-drawer__code">{{ item.code }}</span>
+        <span class="error-drawer__message">{{ item.message }}</span>
+        <span v-if="item.count > 1" class="error-drawer__count">{{ item.count }} 条</span>
       </li>
     </ul>
   </aside>
@@ -39,34 +41,70 @@ const groupedErrors = computed(() => {
 </script>
 
 <style scoped>
-aside {
-  padding: var(--spacing-md);
+.error-drawer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: 10px var(--spacing-md);
   background-color: #fff7e6;
   border-left: 4px solid var(--color-warning);
   border-radius: var(--radius-sm);
-  margin-bottom: var(--spacing-md);
 }
 
-aside:empty {
+.error-drawer:empty {
   display: none;
 }
 
-ul {
+.error-drawer__title {
+  flex-shrink: 0;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.error-drawer__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-width: 0;
+  flex: 1;
   margin: 0;
-  padding-left: var(--spacing-lg);
+  padding: 0;
   list-style: none;
 }
 
-li {
-  padding: var(--spacing-sm) 0;
+.error-drawer__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
-  line-height: 1.6;
+  line-height: 1.3;
 }
 
-li::before {
+.error-drawer__item::before {
   content: "⚠";
-  margin-right: var(--spacing-sm);
   color: var(--color-warning);
+}
+
+.error-drawer__code {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.error-drawer__message {
+  color: var(--color-text-secondary);
+}
+
+.error-drawer__count {
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 1200px) {
+  .error-drawer {
+    align-items: flex-start;
+  }
 }
 </style>

@@ -24,13 +24,13 @@ export default defineConfig({
     {
       command: 'conda run -n test uvicorn app.main:app --host 127.0.0.1 --port 8000 --app-dir ../backend',
       port: 8000,
-      reuseExistingServer: false,
+      reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
     {
       command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',
       port: 5173,
-      reuseExistingServer: false,
+      reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
   ],

@@ -15,7 +15,9 @@ test("groups repeated import warnings by code and message", () => {
 
   const items = screen.getAllByRole("listitem");
   expect(items).toHaveLength(1);
-  expect(items[0]).toHaveTextContent("MISSING_OR_ZERO_AMOUNT - 金额缺失或为 0（3 条）");
+  expect(items[0]).toHaveTextContent("MISSING_OR_ZERO_AMOUNT");
+  expect(items[0]).toHaveTextContent("金额缺失或为 0");
+  expect(items[0]).toHaveTextContent("3 条");
 });
 
 test("hides drawer when there are no import messages", () => {

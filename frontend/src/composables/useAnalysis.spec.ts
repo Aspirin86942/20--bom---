@@ -39,3 +39,29 @@ test("summarizes visible rows and focus subtree separately", () => {
 
     expect(focusSummary.value.amountSum).toBe("15.00");
 });
+
+test("returns empty focus summary when no node is selected", () => {
+    const rows = ref([
+        {
+            id: "row_3",
+            parent_id: "root_2",
+            level: 1,
+            code: "A",
+            attr: "自制",
+            qty_actual: "1",
+            amount: "10",
+        },
+    ]);
+
+    const { currentSummary, focusSummary } = useAnalysis(
+        rows,
+        ref({}),
+        ref(null),
+        ref(false),
+    );
+
+    expect(currentSummary.value.amountSum).toBe("10.00");
+    expect(focusSummary.value.rowCount).toBe(0);
+    expect(focusSummary.value.qtySum).toBe("0.00");
+    expect(focusSummary.value.amountSum).toBe("0.00");
+});

@@ -1,6 +1,6 @@
 <template>
   <section class="workbench">
-    <UploadPanel @select="handleImportFile" />
+    <UploadPanel :compact="Boolean(state.datasetId)" @select="handleImportFile" />
     <ErrorDrawer
       :errors="state.errors.length ? state.errors : state.warnings"
     />
@@ -26,29 +26,19 @@
         @selection-change="selectedRows = $event"
       />
       <div class="side-panels">
-        <AnalysisPanel
-          :current-summary="currentSummary"
-          :focus-summary="focusSummary"
-          :selection-summary="selectionSummary"
-          :include-collapsed-descendants="includeCollapsedDescendants"
-          :amount-by-attr="
-            focusRow
-              ? (state.subtreeAggregates[String(focusRow.id)]?.amount_by_attr ??
-                {})
-              : {}
-          "
-          @update:include-collapsed-descendants="
-            includeCollapsedDescendants = $event
-          "
-        />
         <NodeDetailPanel :node="focusNode" />
         <AnomalyCenter :items="anomalyItems" />
       </div>
     </div>
     <BomGridStatusBar
-      :row-count="currentSummary.rowCount"
-      :qty-sum="currentSummary.qtySum"
-      :amount-sum="currentSummary.amountSum"
+      :current-summary="currentSummary"
+      :focus-summary="focusSummary"
+      :selection-summary="selectionSummary"
+      :amount-by-attr="focusAmountByAttr"
+      :include-collapsed-descendants="includeCollapsedDescendants"
+      @update:include-collapsed-descendants="
+        includeCollapsedDescendants = $event
+      "
     />
   </section>
 </template>
@@ -58,7 +48,6 @@ import { computed, ref } from "vue";
 
 import { exportDataset } from "../api/dataset";
 import AnomalyCenter from "../components/analysis/AnomalyCenter.vue";
-import AnalysisPanel from "../components/analysis/AnalysisPanel.vue";
 import BomGrid from "../components/bom/BomGrid.vue";
 import BomGridStatusBar from "../components/bom/BomGridStatusBar.vue";
 import BomGridToolbar from "../components/bom/BomGridToolbar.vue";
@@ -94,6 +83,15 @@ const includeCollapsedDescendants = ref(false);
 const visibleRowsRef = computed(
   () => filteredRows.value as Array<Record<string, unknown>>,
 );
+const focusAmountByAttr = computed<Record<string, string>>(() => {
+  if (!focusRow.value) {
+    return {};
+  }
+
+  return (
+    state.subtreeAggregates[String(focusRow.value.id)]?.amount_by_attr ?? {}
+  ) as Record<string, string>;
+});
 const { currentSummary, focusSummary } = useAnalysis(
   visibleRowsRef,
   aggregatesRef,
@@ -161,23 +159,36 @@ async function handleExport(): Promise<void> {
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: var(--spacing-md);
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .side-panels {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(140px, auto) minmax(0, 1fr);
   gap: var(--spacing-md);
   min-height: 0;
   overflow: hidden;
 }
 
 @media (max-width: 1200px) {
+  .workbench {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
   .layout {
     grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .side-panels {
+    grid-template-rows: none;
+    overflow: visible;
   }
 }
 </style>

@@ -65,7 +65,9 @@ function valueOf(field: string): string {
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
+  min-height: 0;
+  max-height: clamp(140px, 28vh, 180px);
+  overflow-y: auto;
 }
 
 .node-detail-panel h3 {

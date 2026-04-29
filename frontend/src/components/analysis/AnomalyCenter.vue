@@ -34,8 +34,7 @@ defineProps<{
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  flex: 1 1 0;
-  min-height: 0;
+  min-height: 120px;
   overflow-y: auto;
 }
 

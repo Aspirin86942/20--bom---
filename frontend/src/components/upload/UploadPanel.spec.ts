@@ -102,4 +102,18 @@ describe("UploadPanel", () => {
     expect(ElMessage.error).not.toHaveBeenCalled();
     expect(wrapper.emitted("select")).toBeFalsy();
   });
+
+  it("renders a slim re-import bar in compact mode", () => {
+    const wrapper = mount(UploadPanel, {
+      props: {
+        compact: true,
+      },
+    });
+
+    expect(wrapper.classes()).toContain("upload-panel--compact");
+    expect(wrapper.text()).toContain("重新导入 Excel");
+    expect(wrapper.text()).toContain("点击替换当前数据");
+    expect(wrapper.text()).not.toContain("支持 .xlsx 格式的 BOM 文件");
+    expect(wrapper.find(".upload-panel__compact").exists()).toBe(true);
+  });
 });

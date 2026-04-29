@@ -1,6 +1,15 @@
 import { computed, type Ref } from "vue";
 
 
+function buildEmptySummary() {
+  return {
+    rowCount: 0,
+    qtySum: "0.00",
+    amountSum: "0.00",
+  };
+}
+
+
 function summarizeRows(rows: Array<Record<string, unknown>>) {
   const qtySum = rows.reduce((sum, row) => sum + Number(row.qty_actual ?? 0), 0);
   const amountSum = rows.reduce((sum, row) => sum + Number(row.amount ?? 0), 0);
@@ -46,7 +55,7 @@ export function useAnalysis(
 
   const focusSummary = computed(() => {
     if (!focusRow.value) {
-      return currentSummary.value;
+      return buildEmptySummary();
     }
 
     if (!includeCollapsedDescendants.value) {

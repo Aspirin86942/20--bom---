@@ -1,5 +1,5 @@
 <template>
-  <aside class="analysis-panel">
+  <aside ref="panelRef" class="analysis-panel">
     <h2>分析区</h2>
     <label>
       <input
@@ -23,20 +23,40 @@
 </template>
 
 <script setup lang="ts">
+import { nextTick, ref, watch } from "vue";
+
 import AttrBreakdown from "./AttrBreakdown.vue";
 import SelectionSummary from "./SelectionSummary.vue";
 import SummaryCards from "./SummaryCards.vue";
 
-defineProps<{
-  currentSummary: Record<string, unknown>;
-  focusSummary: Record<string, unknown>;
-  selectionSummary: Record<string, unknown>;
-  amountByAttr: Record<string, unknown>;
-  includeCollapsedDescendants: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    currentSummary: Record<string, unknown>;
+    focusSummary: Record<string, unknown>;
+    selectionSummary: Record<string, unknown>;
+    amountByAttr: Record<string, unknown>;
+    includeCollapsedDescendants: boolean;
+    scrollResetTick?: number;
+  }>(),
+  {
+    scrollResetTick: 0,
+  },
+);
 defineEmits<{
   "update:includeCollapsedDescendants": [value: boolean];
 }>();
+
+const panelRef = ref<HTMLElement | null>(null);
+
+watch(
+  () => props.scrollResetTick,
+  async () => {
+    await nextTick();
+    if (panelRef.value) {
+      panelRef.value.scrollTop = 0;
+    }
+  },
+);
 </script>
 
 <style scoped>
@@ -48,7 +68,7 @@ defineEmits<{
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  flex: 0 0 min(320px, 60%);
+  min-height: 0;
   overflow-y: auto;
 }
 
