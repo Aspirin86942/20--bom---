@@ -133,4 +133,49 @@ test.describe('BOM 上传和筛选功能', () => {
 
     console.log('✓ 展开/折叠功能工作正常');
   });
+
+  test('导入后分析区保持可见且异常列表在自身区域滚动', async ({ page }) => {
+    await page.setViewportSize({ width: 2048, height: 973 });
+    await page.goto('/');
+
+    const testFile = path.join(__dirname, '../../BOM成本查询_2026041415170958.xlsx');
+    await page.locator('input[type="file"]').setInputFiles(testFile);
+
+    await expect(page.locator('.vxe-table')).toBeVisible({ timeout: 10000 });
+    await expect
+      .poll(async () => page.locator('.vxe-body--row').count(), { timeout: 15000 })
+      .toBeGreaterThan(0);
+    await page.waitForTimeout(4000);
+
+    const metrics = await page.evaluate(() => {
+      const sidePanels = document.querySelector('.side-panels');
+      const analysisPanel = document.querySelector('.analysis-panel');
+      const anomalyCenter = document.querySelector('.anomaly-center');
+
+      if (!(sidePanels instanceof HTMLElement)) {
+        throw new Error('side-panels 容器不存在');
+      }
+      if (!(analysisPanel instanceof HTMLElement)) {
+        throw new Error('analysis-panel 容器不存在');
+      }
+      if (!(anomalyCenter instanceof HTMLElement)) {
+        throw new Error('anomaly-center 容器不存在');
+      }
+
+      return {
+        sideClientHeight: sidePanels.clientHeight,
+        sideScrollHeight: sidePanels.scrollHeight,
+        analysisClientHeight: analysisPanel.clientHeight,
+        analysisScrollHeight: analysisPanel.scrollHeight,
+        anomalyClientHeight: anomalyCenter.clientHeight,
+        anomalyScrollHeight: anomalyCenter.scrollHeight,
+        anomalyOverflowY: getComputedStyle(anomalyCenter).overflowY,
+      };
+    });
+
+    expect(metrics.analysisClientHeight).toBeGreaterThanOrEqual(240);
+    expect(metrics.sideScrollHeight - metrics.sideClientHeight).toBeLessThanOrEqual(1);
+    expect(metrics.anomalyOverflowY).toBe('auto');
+    expect(metrics.anomalyScrollHeight).toBeGreaterThan(metrics.anomalyClientHeight);
+  });
 });

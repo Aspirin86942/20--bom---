@@ -48,7 +48,7 @@ defineEmits<{
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
-  max-height: 420px;
+  flex: 0 0 min(320px, 60%);
   overflow-y: auto;
 }
 

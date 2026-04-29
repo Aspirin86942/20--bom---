@@ -172,7 +172,7 @@ async function handleExport(): Promise<void> {
   flex-direction: column;
   gap: var(--spacing-md);
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 @media (max-width: 1200px) {

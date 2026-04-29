@@ -65,6 +65,7 @@ function valueOf(field: string): string {
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 .node-detail-panel h3 {
