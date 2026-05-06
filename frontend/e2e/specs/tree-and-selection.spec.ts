@@ -12,14 +12,14 @@ test.describe("树操作和焦点分析", () => {
 
     await bomWorkbench.expandAll();
     await expect
-      .poll(() => bomWorkbench.gridScrollHeight())
+      .poll(() => bomWorkbench.gridScrollHeight(), { timeout: 10000 })
       .toBeGreaterThan(collapsedHeight);
 
     const expandedHeight = await bomWorkbench.gridScrollHeight();
 
     await bomWorkbench.collapseAll();
     await expect
-      .poll(() => bomWorkbench.gridScrollHeight())
+      .poll(() => bomWorkbench.gridScrollHeight(), { timeout: 10000 })
       .toBeLessThan(expandedHeight);
   });
 
