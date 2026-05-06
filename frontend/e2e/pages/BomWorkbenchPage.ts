@@ -57,7 +57,17 @@ export class BomWorkbenchPage {
   }
 
   async importValidWorkbookExpectingFailure(): Promise<void> {
-    await this.page.locator('input[type="file"]').setInputFiles(validWorkbookPath);
+    const fileInput = this.page.locator('input[type="file"]');
+    const importResponsePromise = this.page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/import") &&
+        response.request().method() === "POST" &&
+        response.status() >= 400,
+    );
+    // 重复导入同一文件时，先清空 input，确保浏览器稳定触发 change 事件。
+    await fileInput.setInputFiles([]);
+    await fileInput.setInputFiles(validWorkbookPath);
+    await importResponsePromise;
   }
 
   async expectGridReady(): Promise<void> {
