@@ -1,5 +1,5 @@
 <template>
-  <div class="bom-grid-container">
+  <div class="bom-grid-container" data-testid="bom-grid">
     <vxe-table
       ref="gridRef"
       :data="rows"

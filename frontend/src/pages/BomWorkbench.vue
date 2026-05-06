@@ -1,5 +1,5 @@
 <template>
-  <section class="workbench">
+  <section class="workbench" data-testid="workbench">
     <UploadPanel :compact="Boolean(state.datasetId)" @select="handleImportFile" />
     <ErrorDrawer
       :errors="state.errors.length ? state.errors : state.warnings"
@@ -15,7 +15,7 @@
       @expand-all="expanded = true"
       @collapse-all="expanded = false"
     />
-    <div class="layout">
+    <div class="layout" data-testid="workbench-layout">
       <BomGrid
         :rows="filteredRows"
         :flat-rows="rowsRef"
@@ -25,7 +25,7 @@
         @focus-row="handleFocusRow"
         @selection-change="selectedRows = $event"
       />
-      <div class="side-panels">
+      <div class="side-panels" data-testid="side-panels">
         <NodeDetailPanel :node="focusNode" />
         <AnomalyCenter :items="anomalyItems" />
       </div>
@@ -120,10 +120,11 @@ function handleFocusRow(row: Record<string, unknown> | null): void {
 }
 
 async function handleImportFile(file: File): Promise<void> {
+  const previousDatasetId = state.datasetId;
   await importFile(file);
 
-  // 仅在导入成功后清空旧上下文，失败时保留现有筛选和焦点。
-  if (!state.datasetId) {
+  // 仅在真实导入成功并切换到新数据集后清空旧上下文；失败请求会保留旧 datasetId。
+  if (!state.datasetId || state.datasetId === previousDatasetId) {
     return;
   }
 
@@ -151,27 +152,33 @@ async function handleExport(): Promise<void> {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: var(--spacing-lg);
-  gap: var(--spacing-md);
+  min-height: 0;
+  box-sizing: border-box;
+  padding: clamp(12px, 1.2vw, 20px);
+  gap: var(--spacing-sm);
   background-color: var(--color-bg-container);
   overflow: hidden;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: var(--spacing-md);
-  flex: 1;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: var(--spacing-sm);
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
 }
 
 .side-panels {
   display: grid;
-  grid-template-rows: minmax(140px, auto) minmax(0, 1fr);
-  gap: var(--spacing-md);
+  grid-template-rows: minmax(140px, 170px) minmax(120px, 1fr);
+  gap: var(--spacing-sm);
   min-height: 0;
   overflow: hidden;
+}
+
+:deep(.status-bar) {
+  flex: 0 0 auto;
 }
 
 @media (max-width: 1200px) {

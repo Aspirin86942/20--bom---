@@ -1,6 +1,7 @@
 <template>
   <el-upload
     class="upload-panel"
+    data-testid="upload-panel"
     :class="{ 'upload-panel--compact': compact }"
     :drag="!compact"
     accept=".xlsx"
