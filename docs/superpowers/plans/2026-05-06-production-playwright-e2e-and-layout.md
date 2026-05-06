@@ -1229,10 +1229,10 @@ test.describe("导出口径", () => {
     });
 
     expect(rows.length).toBeGreaterThan(0);
-    expect(rows[0]).toHaveProperty("code");
-    expect(rows[0]).toHaveProperty("name");
-    expect(rows[0]).toHaveProperty("attr");
-    expect(rows[0]).toHaveProperty("amount");
+    expect(rows[0]).toHaveProperty("物料编码");
+    expect(rows[0]).toHaveProperty("物料名称");
+    expect(rows[0]).toHaveProperty("物料属性");
+    expect(rows[0]).toHaveProperty("金额");
   });
 
   test("@api 搜索后的导出结果不超过当前视图业务行数", async ({
@@ -1258,7 +1258,7 @@ test.describe("导出口径", () => {
 
   test("@api 错误导出模式返回 rows 数组", async ({ bomWorkbench }) => {
     await bomWorkbench.open();
-    await bomWorkbench.importValidWorkbook();
+    await bomWorkbench.importValidWorkbookExpectingFailure();
 
     const rows = await bomWorkbench.exportErrors();
 
