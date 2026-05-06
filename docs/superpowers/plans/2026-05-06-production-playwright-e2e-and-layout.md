@@ -50,6 +50,8 @@
 
 **删除文件：**
 
+- `frontend/playwright-report/index.html`：历史提交的 Playwright HTML report 产物，后续改为忽略，不再纳入版本控制。
+- `frontend/test-results/.last-run.json`：历史提交的 Playwright 运行状态产物，后续改为忽略，不再纳入版本控制。
 - `frontend/e2e/bom-upload-and-filter.spec.ts`：内容迁移到新的分层 specs 后删除，避免旧测试被误维护。
 
 ---
@@ -62,6 +64,8 @@
 - Modify: `frontend/playwright.config.ts`
 - Create: `frontend/e2e/data/not-a-workbook.txt`
 - Create: `frontend/e2e/data/broken-workbook.xlsx`
+- Delete: `frontend/playwright-report/index.html`
+- Delete: `frontend/test-results/.last-run.json`
 
 - [ ] **Step 1: 更新 `.gitignore` 忽略 Playwright 产物**
 
@@ -73,7 +77,15 @@ frontend/test-results/
 frontend/blob-report/
 ```
 
-- [ ] **Step 2: 创建客户端校验 fixture**
+- [ ] **Step 2: 移除历史提交的 Playwright 产物**
+
+Delete these tracked generated files so `.gitignore` can take effect:
+
+```powershell
+git rm --cached frontend/playwright-report/index.html frontend/test-results/.last-run.json
+```
+
+- [ ] **Step 3: 创建客户端校验 fixture**
 
 Create `frontend/e2e/data/not-a-workbook.txt` with this content:
 
@@ -81,7 +93,7 @@ Create `frontend/e2e/data/not-a-workbook.txt` with this content:
 这不是 Excel 工作簿，用于验证前端会拦截非 .xlsx 文件。
 ```
 
-- [ ] **Step 3: 创建服务端校验 fixture**
+- [ ] **Step 4: 创建服务端校验 fixture**
 
 Create `frontend/e2e/data/broken-workbook.xlsx` with this content:
 
@@ -91,7 +103,7 @@ not a valid xlsx workbook
 
 虽然扩展名是 `.xlsx`，内容不是有效 Excel；该文件用于触发后端 `INVALID_WORKBOOK`。
 
-- [ ] **Step 4: 更新 `frontend/package.json` 脚本**
+- [ ] **Step 5: 更新 `frontend/package.json` 脚本**
 
 Replace the `scripts` block with:
 
@@ -112,7 +124,7 @@ Replace the `scripts` block with:
 }
 ```
 
-- [ ] **Step 5: 更新 `frontend/playwright.config.ts`**
+- [ ] **Step 6: 更新 `frontend/playwright.config.ts`**
 
 Replace the file with:
 
@@ -120,7 +132,7 @@ Replace the file with:
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./e2e/specs",
+  testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -162,7 +174,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 6: 验证 Playwright 配置可解析**
+- [ ] **Step 7: 验证 Playwright 配置可解析且不会丢失现有测试发现**
 
 Run:
 
@@ -170,9 +182,9 @@ Run:
 cd frontend; npx playwright test --list
 ```
 
-Expected: command exits `0`. It may list zero tests until later tasks add specs.
+Expected: command exits `0` and still能发现当前已有的 legacy spec；`./e2e/specs` 可以在后续任务落地前保持为空。
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```powershell
 git add .gitignore frontend/package.json frontend/playwright.config.ts frontend/e2e/data/not-a-workbook.txt frontend/e2e/data/broken-workbook.xlsx
@@ -1091,7 +1103,7 @@ test.describe("搜索和筛选回归", () => {
     bomWorkbench,
   }) => {
     await bomWorkbench.open();
-    await bomWorkbench.importValidWorkbookExpectingFailure();
+    await bomWorkbench.importValidWorkbook();
 
     const totalRows = await bomWorkbench.currentRowCount();
     await bomWorkbench.search("电阻");
