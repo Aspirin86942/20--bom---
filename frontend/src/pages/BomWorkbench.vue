@@ -120,10 +120,11 @@ function handleFocusRow(row: Record<string, unknown> | null): void {
 }
 
 async function handleImportFile(file: File): Promise<void> {
+  const previousDatasetId = state.datasetId;
   await importFile(file);
 
-  // 仅在导入成功后清空旧上下文，失败时保留现有筛选和焦点。
-  if (!state.datasetId) {
+  // 仅在真实导入成功并切换到新数据集后清空旧上下文；失败请求会保留旧 datasetId。
+  if (!state.datasetId || state.datasetId === previousDatasetId) {
     return;
   }
 

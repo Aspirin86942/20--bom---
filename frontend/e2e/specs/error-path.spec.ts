@@ -36,7 +36,18 @@ test.describe("导入异常路径", () => {
     await bomWorkbench.open();
     await bomWorkbench.importValidWorkbook();
 
+    await bomWorkbench.search("B.WW.T0019AA");
+    await expect
+      .poll(() => bomWorkbench.currentRowCount(), { timeout: 10000 })
+      .toBeGreaterThan(2);
+
     const rowCountBeforeFailure = await bomWorkbench.currentRowCount();
+    const searchInput = page.getByTestId("toolbar-search");
+
+    await expect(searchInput).toHaveValue("B.WW.T0019AA");
+    await expect(page.getByText("C.T.D0005AA")).toBeVisible();
+    await expect(page.getByText("B.WW.T0019AA")).toBeVisible();
+    await expect(page.getByText("B.P.C0001AA")).toBeVisible();
 
     await page.route("**/api/import", async (route) => {
       await route.fulfill({
@@ -56,6 +67,12 @@ test.describe("导入异常路径", () => {
 
     await expect(page.getByTestId("error-drawer")).toBeVisible();
     await expect(page.getByText("模拟导入失败")).toBeVisible();
-    await expect.poll(() => bomWorkbench.currentRowCount()).toBe(rowCountBeforeFailure);
+    await expect(searchInput).toHaveValue("B.WW.T0019AA");
+    await expect
+      .poll(() => bomWorkbench.currentRowCount(), { timeout: 10000 })
+      .toBe(rowCountBeforeFailure);
+    await expect(page.getByText("C.T.D0005AA")).toBeVisible();
+    await expect(page.getByText("B.WW.T0019AA")).toBeVisible();
+    await expect(page.getByText("B.P.C0001AA")).toBeVisible();
   });
 });
