@@ -65,8 +65,8 @@ function valueOf(field: string): string {
   background-color: var(--color-bg-elevated);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  min-height: 0;
-  max-height: clamp(140px, 28vh, 180px);
+  min-height: 140px;
+  max-height: 170px;
   overflow-y: auto;
 }
 

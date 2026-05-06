@@ -120,8 +120,8 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
 .status-bar {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  gap: 8px;
+  padding: 10px var(--spacing-md);
   background:
     linear-gradient(180deg, rgba(79, 124, 172, 0.08), transparent 72%),
     var(--color-bg-elevated);
@@ -129,6 +129,7 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   min-height: 0;
+  overflow: visible;
 }
 
 .status-bar__toolbar {
@@ -174,15 +175,15 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
 .status-bar__grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--spacing-sm);
+  gap: 8px;
   min-height: 0;
 }
 
 .summary-card {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
-  padding: 12px;
+  gap: 8px;
+  padding: 10px;
   background-color: var(--color-bg-container);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
@@ -198,7 +199,7 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
 .summary-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--spacing-sm);
+  gap: 8px;
   margin: 0;
 }
 
@@ -217,7 +218,8 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
 
 .metric-item dd {
   margin: 0;
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-base);
+  line-height: 1.2;
   font-weight: 600;
   color: var(--color-primary);
   word-break: break-word;
@@ -260,7 +262,7 @@ const attrEntries = computed(() => Object.entries(props.amountByAttr));
   color: var(--color-text-secondary);
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1200px) {
   .status-bar__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

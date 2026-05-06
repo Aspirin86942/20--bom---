@@ -54,6 +54,8 @@ const groupedErrors = computed(() => {
   background-color: #fff7e6;
   border-left: 4px solid var(--color-warning);
   border-radius: var(--radius-sm);
+  max-height: 64px;
+  overflow-y: auto;
 }
 
 .error-drawer:empty {

@@ -151,27 +151,33 @@ async function handleExport(): Promise<void> {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding: var(--spacing-lg);
-  gap: var(--spacing-md);
+  min-height: 0;
+  box-sizing: border-box;
+  padding: clamp(12px, 1.2vw, 20px);
+  gap: var(--spacing-sm);
   background-color: var(--color-bg-container);
   overflow: hidden;
 }
 
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
-  gap: var(--spacing-md);
-  flex: 1;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+  gap: var(--spacing-sm);
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
 }
 
 .side-panels {
   display: grid;
-  grid-template-rows: minmax(140px, auto) minmax(0, 1fr);
-  gap: var(--spacing-md);
+  grid-template-rows: minmax(140px, 170px) minmax(120px, 1fr);
+  gap: var(--spacing-sm);
   min-height: 0;
   overflow: hidden;
+}
+
+:deep(.status-bar) {
+  flex: 0 0 auto;
 }
 
 @media (max-width: 1200px) {
