@@ -4,6 +4,7 @@
       <span>搜索</span>
       <input
         type="text"
+        data-testid="toolbar-search"
         :value="search"
         aria-label="搜索编码/名称"
         placeholder="搜索编码/名称"
@@ -51,6 +52,7 @@
       <span>金额下限</span>
       <input
         type="text"
+        data-testid="toolbar-amount-min"
         :value="amountMin"
         aria-label="金额下限"
         inputmode="decimal"
@@ -60,7 +62,11 @@
     </label>
     <button type="button" @click="emit('expand-all')">全部展开</button>
     <button type="button" @click="emit('collapse-all')">全部折叠</button>
-    <button type="button" @click="emit('export-current')">
+    <button
+      type="button"
+      data-testid="export-current-button"
+      @click="emit('export-current')"
+    >
       导出当前结果
     </button>
   </div>

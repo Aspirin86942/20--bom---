@@ -1,5 +1,5 @@
 <template>
-  <section class="anomaly-center">
+  <section class="anomaly-center" data-testid="anomaly-center">
     <h3>异常中心</h3>
     <p class="count">异常总数：{{ items.length }}</p>
     <ul v-if="items.length" class="anomaly-list">

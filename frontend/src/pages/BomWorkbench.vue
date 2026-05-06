@@ -1,5 +1,5 @@
 <template>
-  <section class="workbench">
+  <section class="workbench" data-testid="workbench">
     <UploadPanel :compact="Boolean(state.datasetId)" @select="handleImportFile" />
     <ErrorDrawer
       :errors="state.errors.length ? state.errors : state.warnings"
@@ -15,7 +15,7 @@
       @expand-all="expanded = true"
       @collapse-all="expanded = false"
     />
-    <div class="layout">
+    <div class="layout" data-testid="workbench-layout">
       <BomGrid
         :rows="filteredRows"
         :flat-rows="rowsRef"
@@ -25,7 +25,7 @@
         @focus-row="handleFocusRow"
         @selection-change="selectedRows = $event"
       />
-      <div class="side-panels">
+      <div class="side-panels" data-testid="side-panels">
         <NodeDetailPanel :node="focusNode" />
         <AnomalyCenter :items="anomalyItems" />
       </div>

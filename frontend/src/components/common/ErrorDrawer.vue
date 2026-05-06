@@ -1,8 +1,13 @@
 <template>
-  <aside v-if="errors.length" class="error-drawer">
+  <aside v-if="errors.length" class="error-drawer" data-testid="error-drawer">
     <span class="error-drawer__title">导入提示</span>
     <ul class="error-drawer__list">
-      <li v-for="item in groupedErrors" :key="item.key" class="error-drawer__item">
+      <li
+        v-for="item in groupedErrors"
+        :key="item.key"
+        class="error-drawer__item"
+        data-testid="error-item"
+      >
         <span class="error-drawer__code">{{ item.code }}</span>
         <span class="error-drawer__message">{{ item.message }}</span>
         <span v-if="item.count > 1" class="error-drawer__count">{{ item.count }} 条</span>

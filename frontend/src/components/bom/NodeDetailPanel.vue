@@ -1,5 +1,5 @@
 <template>
-  <section class="node-detail-panel">
+  <section class="node-detail-panel" data-testid="node-detail-panel">
     <h3>节点详情</h3>
     <p v-if="!node" class="empty">请选择节点查看详情</p>
     <dl v-else class="detail-list">
